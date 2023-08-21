@@ -13,7 +13,7 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
     langulus_fetch_cmake()
 
     # Always enable the managed memory feature                                  
-    set(LANGULUS_FEATURE_MANAGED_MEMORY ON CACHE 
+    set(LANGULUS_FEATURE_MANAGED_MEMORY ON CACHE BOOL
         "Memory will be pooled and recycled when freed, and you can safely push any kind of pointer, \
         as long as it was allocated by the memory manager, or by the overridden new/delete feature"
         FORCE
@@ -28,6 +28,10 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
     fetch_langulus_module(Core)
     fetch_langulus_module(Logger)
     fetch_langulus_module(RTTI)
+endif()
+
+if (NOT LANGULUS_FEATURE_MANAGED_MEMORY)
+    message(FATAL_ERROR "Fractalloc can be built only with enabled LANGULUS_FEATURE_MANAGED_MEMORY")
 endif()
 
 add_library(LangulusFractalloc ${LANGULUS_LIBRARY_TYPE}
