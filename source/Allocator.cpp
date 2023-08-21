@@ -676,10 +676,16 @@ namespace Langulus::Fractalloc
          if (!type->mPool)
             continue;
 
-         const auto scope = 
-            Logger::Info(Logger::Purple, "TYPE POOL CHAIN FOR ", type->mCppName, 
-               " (BOUNDARY: ", Logger::Push, Logger::Underline, type->mLibraryName, Logger::Pop,
-               "): ", Logger::Tabs {});
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+            const auto scope = 
+               Logger::Info(Logger::Purple, "TYPE POOL CHAIN FOR ", type->mCppName, 
+                  " (BOUNDARY: ", Logger::Push, Logger::Underline, type->mLibraryName, Logger::Pop,
+                  "): ", Logger::Tabs {});
+         #else
+            const auto scope =
+               Logger::Info(Logger::Purple, "TYPE POOL CHAIN FOR ", type->mCppName,
+                  Logger::Tabs {});
+         #endif
 
          Count counter {};
          auto pool = static_cast<Pool*>(type->mPool);
