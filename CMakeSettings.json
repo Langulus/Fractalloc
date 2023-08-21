@@ -12,11 +12,6 @@
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
           "type": "BOOL"
@@ -45,11 +40,6 @@
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "OFF",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "OFF",
           "type": "BOOL"
@@ -77,11 +67,6 @@
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "msvc_x86" ],
       "variables": [
-        {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
         {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
@@ -113,11 +98,6 @@
       "wslPath": "${defaultWSLPath}",
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
           "type": "BOOL"
@@ -145,11 +125,6 @@
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "clang_cl_x86" ],
       "variables": [
-        {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
         {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
@@ -179,11 +154,6 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
           "type": "BOOL"
@@ -212,11 +182,6 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
           "type": "BOOL"
@@ -244,11 +209,6 @@
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "clang_cl_x86" ],
       "variables": [
-        {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
         {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
@@ -280,11 +240,6 @@
       "wslPath": "${defaultWSLPath}",
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
           "type": "BOOL"
@@ -313,11 +268,6 @@
       "inheritEnvironments": [ "clang_cl_x64_x64" ],
       "variables": [
         {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
-        {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",
           "type": "BOOL"
@@ -345,11 +295,6 @@
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "clang_cl_x64_x64" ],
       "variables": [
-        {
-          "name": "LANGULUS_FEATURE_MANAGED_MEMORY",
-          "value": "ON",
-          "type": "BOOL"
-        },
         {
           "name": "LANGULUS_FEATURE_MANAGED_REFLECTION",
           "value": "ON",

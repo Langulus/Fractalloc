@@ -6,17 +6,24 @@ project(LangulusFractalloc
     LANGUAGES       CXX
 )
 
-# Check if this project is built as standalone, or a part of something else 
+# Check if this project is built as standalone, or a part of something else     
 if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
-    # Populate the cmake directory											
+    # Populate the cmake directory                                              
     include(LangulusUtilities.cmake)
     langulus_fetch_cmake()
 
-    # Handle feature flags and global definitions/requirements				
+    # Always enable the managed memory feature                                  
+    set(LANGULUS_FEATURE_MANAGED_MEMORY ON CACHE 
+        "Memory will be pooled and recycled when freed, and you can safely push any kind of pointer, \
+        as long as it was allocated by the memory manager, or by the overridden new/delete feature"
+        FORCE
+    )
+
+    # Handle feature flags and global definitions/requirements                  
     include(HandleLangulusFeatures)
     handle_langulus_features()
 
-    # Add Langulus::Core/Logger/RTTI/SIMD libraries                         
+    # Add Langulus::Core/Logger/RTTI/SIMD libraries                             
     include(FetchLangulusModule)
     fetch_langulus_module(Core)
     fetch_langulus_module(Logger)
@@ -46,5 +53,5 @@ target_compile_definitions(LangulusFractalloc
 
 if(LANGULUS_ENABLE_TESTING)
     enable_testing()
-	add_subdirectory(test)
+    add_subdirectory(test)
 endif()
