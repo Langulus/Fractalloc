@@ -267,6 +267,7 @@ namespace Langulus::Fractalloc
       }
    }
 
+#if LANGULUS_FEATURE(MANAGED_REFLECTION)
    /// Check RTTI boundary for allocated pools                                
    /// Useful to decide when shared library is no longer used and is ready    
    /// to be unloaded. Use it after a call to CollectGarbage                  
@@ -285,6 +286,7 @@ namespace Langulus::Fractalloc
       }
       return count;
    }
+#endif
 
    /// Search in a pool chain                                                 
    ///   @param memory - memory pointer                                       

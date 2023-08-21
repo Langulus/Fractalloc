@@ -124,8 +124,10 @@ namespace Langulus::Fractalloc
       LANGULUS_API(FRACTALLOC)
       static void CollectGarbage();
 
-      LANGULUS_API(FRACTALLOC)
-      static Count CheckBoundary(const Token&) noexcept;
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         LANGULUS_API(FRACTALLOC)
+         static Count CheckBoundary(const Token&) noexcept;
+      #endif
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
          NOD() LANGULUS_API(FRACTALLOC)
