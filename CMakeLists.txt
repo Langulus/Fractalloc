@@ -3,7 +3,6 @@ project(LangulusFractalloc
     VERSION         1.0.0
     DESCRIPTION     "Langulus memory management library"
     HOMEPAGE_URL    https://langulus.com
-    LANGUAGES       CXX
 )
 
 # Check if this project is built as standalone, or a part of something else     
