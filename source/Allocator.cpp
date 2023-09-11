@@ -1,6 +1,7 @@
 ///                                                                           
 /// Langulus::Fractalloc                                                      
-/// Copyright(C) 2015 Dimo Markov <langulusteam@gmail.com>                    
+/// Copyright (c) 2015 Dimo Markov <team@langulus.com>                        
+/// Part of the Langulus framework, see https://langulus.com                  
 ///                                                                           
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
@@ -24,7 +25,7 @@ namespace Langulus::Fractalloc
    T* AlignedAllocate(DMeta hint, const Size& size) SAFETY_NOEXCEPT() {
       const auto finalSize = T::GetNewAllocationSize(size) + Alignment;
       const auto base = ::std::malloc(finalSize);
-      if (!base) UNLIKELY()
+      if (not base)
          return nullptr;
 
       // Align pointer to the alignment LANGULUS was built with         
@@ -89,7 +90,7 @@ namespace Langulus::Fractalloc
       // If reached, pool chain can't contain the memory                
       // Allocate a new pool and add it at the front of hinted chain    
       pool = AllocatePool(nullptr, Allocation::GetNewAllocationSize(size));
-      if (!pool)
+      if (not pool)
          return nullptr;
 
       memory = pool->Allocate(size);
@@ -218,7 +219,7 @@ namespace Langulus::Fractalloc
          chainStart = next;
       }
 
-      if (!chainStart)
+      if (not chainStart)
          return;
 
       auto prev = chainStart;
