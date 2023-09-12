@@ -11,7 +11,11 @@
 
 /// See https://github.com/catchorg/Catch2/blob/devel/docs/tostring.md        
 CATCH_TRANSLATE_EXCEPTION(::Langulus::Exception const& ex) {
-   return ::std::string {ex.GetMessage()};
+   #if LANGULUS(DEBUG)
+      return ::std::string {ex.GetMessage()};
+   #else
+      return ::std::string {ex.GetName()};
+   #endif
 }
 
 #if LANGULUS_FEATURE(NEWDELETE)
