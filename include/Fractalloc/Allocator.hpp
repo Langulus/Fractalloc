@@ -97,30 +97,30 @@ namespace Langulus::Fractalloc
       LANGULUS_API(FRACTALLOC)
       void CollectGarbageChain(Pool*&);
 
-      Allocation* FindInChain(const void*, Pool*) const SAFETY_NOEXCEPT();
-      bool ContainedInChain(const void*, Pool*) const SAFETY_NOEXCEPT();
+      Allocation* FindInChain(const void*, Pool*) const IF_UNSAFE(noexcept);
+      bool ContainedInChain(const void*, Pool*) const IF_UNSAFE(noexcept);
 
    public:
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Allocate(RTTI::DMeta, const Size&) SAFETY_NOEXCEPT();
+      static Allocation* Allocate(RTTI::DMeta, const Size&) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Reallocate(const Size&, Allocation*) SAFETY_NOEXCEPT();
+      static Allocation* Reallocate(const Size&, Allocation*) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
-      static void Deallocate(Allocation*) SAFETY_NOEXCEPT();
+      static void Deallocate(Allocation*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Find(RTTI::DMeta, const void*) SAFETY_NOEXCEPT();
+      static Allocation* Find(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static bool CheckAuthority(RTTI::DMeta, const void*) SAFETY_NOEXCEPT();
+      static bool CheckAuthority(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Pool* AllocatePool(DMeta, const Size&) SAFETY_NOEXCEPT();
+      static Pool* AllocatePool(DMeta, const Size&) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
-      static void DeallocatePool(Pool*) SAFETY_NOEXCEPT();
+      static void DeallocatePool(Pool*) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
       static void CollectGarbage();

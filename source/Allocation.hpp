@@ -14,7 +14,7 @@
 
 namespace Langulus::Fractalloc
 {
-   using namespace ::Langulus::RTTI;
+
    class Pool;
    
    template<class T>

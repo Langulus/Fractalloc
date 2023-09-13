@@ -646,7 +646,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
             REQUIRE_FALSE(Allocator::Find(nullptr, entry));
          }
 
-         SAFETY(REQUIRE_THROWS(Allocator::Deallocate(entry)));
+         IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free();
          Allocator::Deallocate(entry);
       }
@@ -665,7 +665,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
             REQUIRE_FALSE(Allocator::Find(nullptr, entry));
          }
 
-         SAFETY(REQUIRE_THROWS(Allocator::Deallocate(entry)));
+         IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free(5);
          Allocator::Deallocate(entry);
       }
@@ -703,7 +703,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
             REQUIRE_FALSE(Allocator::Find(nullptr, entry));
          }
 
-         SAFETY(REQUIRE_THROWS(Allocator::Deallocate(entry)));
+         IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free(1);
          Allocator::Deallocate(entry);
       }
@@ -729,7 +729,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          REQUIRE(entry);
          entry->Keep(5);
 
-         SAFETY(REQUIRE_THROWS(Allocator::Deallocate(entry)));
+         IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free(5);
          Allocator::Deallocate(entry);
 

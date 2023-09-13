@@ -12,6 +12,8 @@
 namespace Langulus::Fractalloc
 {
    
+   using RTTI::MetaData;
+
    /// MSVC will likely never support std::aligned_alloc, so we use           
    /// a custom portable routine that's almost the same                       
    /// https://stackoverflow.com/questions/62962839                           
@@ -22,7 +24,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of client bytes to allocate                 
    ///   @return a newly allocated memory that is correctly aligned           
    template<AllocationPrimitive T>
-   T* AlignedAllocate(DMeta hint, const Size& size) SAFETY_NOEXCEPT() {
+   T* AlignedAllocate(DMeta hint, const Size& size) IF_UNSAFE(noexcept) {
       const auto finalSize = T::GetNewAllocationSize(size) + Alignment;
       const auto base = ::std::malloc(finalSize);
       if (not base)
@@ -49,7 +51,7 @@ namespace Langulus::Fractalloc
    ///   @param hint - optional meta data to associate pool with              
    ///   @param size - the number of bytes to allocate                        
    ///   @return the allocation, or nullptr if out of memory                  
-   Allocation* Allocator::Allocate(RTTI::DMeta hint, const Size& size) SAFETY_NOEXCEPT() {
+   Allocation* Allocator::Allocate(RTTI::DMeta hint, const Size& size) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, size, "Zero allocation is not allowed");
 
       // Decide pool chain, based on hint                               
@@ -134,7 +136,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of bytes to allocate                        
    ///   @param previous - the previous memory entry                          
    ///   @return the reallocated memory entry, or nullptr if out of memory    
-   Allocation* Allocator::Reallocate(const Size& size, Allocation* previous) SAFETY_NOEXCEPT() {
+   Allocation* Allocator::Reallocate(const Size& size, Allocation* previous) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, previous,
          "Reallocating nullptr");
       LANGULUS_ASSUME(DevAssumes, size != previous->GetAllocatedSize(),
@@ -165,7 +167,7 @@ namespace Langulus::Fractalloc
    ///   @attention assumes entry is a valid entry under jurisdiction         
    ///   @attention doesn't call any destructors                              
    ///   @param entry - the memory entry to deallocate                        
-   void Allocator::Deallocate(Allocation* entry) SAFETY_NOEXCEPT() {
+   void Allocator::Deallocate(Allocation* entry) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, entry,
          "Deallocating nullptr");
       LANGULUS_ASSUME(DevAssumes, entry->GetAllocatedSize(),
@@ -188,7 +190,7 @@ namespace Langulus::Fractalloc
    ///   @param hint - optional meta data to associate pool with              
    ///   @param size - size of the pool (in bytes)                            
    ///   @return a pointer to the new pool                                    
-   Pool* Allocator::AllocatePool(DMeta hint, const Size& size) SAFETY_NOEXCEPT() {
+   Pool* Allocator::AllocatePool(DMeta hint, const Size& size) IF_UNSAFE(noexcept) {
       const auto poolSize = ::std::max(Pool::DefaultPoolSize, Roof2(size));
       return AlignedAllocate<Pool>(hint, poolSize);
    }
@@ -198,7 +200,7 @@ namespace Langulus::Fractalloc
    ///   @attention pool or any entry inside is no longer valid after this    
    ///   @attention assumes pool is a valid pointer                           
    ///   @param pool - the pool to deallocate                                 
-   void Allocator::DeallocatePool(Pool* pool) SAFETY_NOEXCEPT() {
+   void Allocator::DeallocatePool(Pool* pool) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, pool, "Nullptr provided");
       ::std::free(pool->mHandle);
    }
@@ -294,7 +296,7 @@ namespace Langulus::Fractalloc
    ///   @param pool - start of the pool chain                                
    ///   @return the memory entry that contains the memory pointer, or        
    ///           nullptr if memory is not ours, its entry is no longer used   
-   Allocation* Allocator::FindInChain(const void* memory, Pool* pool) const SAFETY_NOEXCEPT() {
+   Allocation* Allocator::FindInChain(const void* memory, Pool* pool) const IF_UNSAFE(noexcept) {
       while (pool) {
          const auto found = pool->Find(memory);
          if (found) {
@@ -313,7 +315,7 @@ namespace Langulus::Fractalloc
    ///   @param memory - memory pointer                                       
    ///   @param pool - start of the pool chain                                
    ///   @return true if we have authority over the memory                    
-   bool Allocator::ContainedInChain(const void* memory, Pool* pool) const SAFETY_NOEXCEPT() {
+   bool Allocator::ContainedInChain(const void* memory, Pool* pool) const IF_UNSAFE(noexcept) {
       while (pool) {
          if (pool->Contains(memory))
             return true;
@@ -333,7 +335,7 @@ namespace Langulus::Fractalloc
    ///   @param memory - memory pointer                                       
    ///   @return the memory entry that contains the memory pointer, or        
    ///           nullptr if memory is not ours, its entry is no longer used   
-   Allocation* Allocator::Find(DMeta hint, const void* memory) SAFETY_NOEXCEPT() {
+   Allocation* Allocator::Find(DMeta hint, const void* memory) IF_UNSAFE(noexcept) {
       // Scan the last pool that found something (hot region)           
       //TODO consider a whole stack of those?
       if (Instance.mLastFoundPool) {
@@ -450,7 +452,7 @@ namespace Langulus::Fractalloc
    ///   @param hint - the type of data to search for (optional)              
    ///   @param memory - memory pointer                                       
    ///   @return true if we own the memory                                    
-   bool Allocator::CheckAuthority(DMeta hint, const void* memory) SAFETY_NOEXCEPT() {
+   bool Allocator::CheckAuthority(DMeta hint, const void* memory) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, memory, "Nullptr provided");
 
       // Scan the last pool that found something (hot region)           
