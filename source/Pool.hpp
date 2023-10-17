@@ -80,7 +80,6 @@ namespace Langulus::Fractalloc
       NOD() constexpr bool CanContain(const Size&) const noexcept;
       NOD() bool Contains(const void*) const noexcept;
       NOD() const Allocation* Find(const void*) const IF_UNSAFE(noexcept);
-      NOD() Allocation* Find(const void*) IF_UNSAFE(noexcept);
 
       NOD() Allocation* Allocate(Size) IF_UNSAFE(noexcept);
       NOD() bool Reallocate(Allocation*, Size) IF_UNSAFE(noexcept);
@@ -90,13 +89,11 @@ namespace Langulus::Fractalloc
       void Touch();
 
       NOD() Size ThresholdFromIndex(const Offset&) const noexcept;
-      NOD() Allocation* AllocationFromIndex(const Offset&) noexcept;
       NOD() const Allocation* AllocationFromIndex(const Offset&) const noexcept;
       NOD() Offset IndexFromAddress(const void*) const IF_UNSAFE(noexcept);
       NOD() Offset ValidateIndex(Offset) const noexcept;
       NOD() Offset UpIndex(Offset) const noexcept;
-      NOD() Allocation* AllocationFromAddress(const void*) IF_UNSAFE(noexcept);
-      NOD() const Allocation* AllocationFromAddress(const void*) const noexcept;
+      NOD() const Allocation* AllocationFromAddress(const void*) const IF_UNSAFE(noexcept);
    };
 
 } // namespace Langulus::Fractalloc

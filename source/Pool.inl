@@ -20,10 +20,11 @@ namespace Langulus::Fractalloc
    ///   @param meta - optional meta data associated with pool                
    ///   @param size - bytes of the usable block to initialize with           
    ///   @param memory - handle for use with std::free()                      
-   inline Pool::Pool(DMeta meta, const Size& size, void* memory) noexcept
+   LANGULUS(INLINED)
+   Pool::Pool(DMeta meta, const Size& size, void* memory) noexcept
       : mAllocatedByBackend {size}
       , mAllocatedByBackendLog2 {Inner::FastLog2(size)}
-      , mAllocatedByBackendLSB {Inner::LSB(size >> Size{1})}
+      , mAllocatedByBackendLSB  {Inner::LSB(size >> Size{1})}
       , mThreshold {size}
       , mThresholdPrevious {size}
       , mThresholdMin {Roof2cexpr(meta 
@@ -43,12 +44,14 @@ namespace Langulus::Fractalloc
 
    /// Get the minimum allocation for an entry inside this pool               
    ///   @return the size in bytes, always a power-of-two                     
+   LANGULUS(INLINED)
    constexpr Size Pool::GetMinAllocation() const noexcept {
       return mThresholdMin;
    }
 
    /// Get the total byte size of the pool, including overhead                
    ///   @return the size in bytes                                            
+   LANGULUS(INLINED)
    constexpr Size Pool::GetTotalSize() const noexcept {
       return Pool::GetSize() + mAllocatedByBackend;
    }
@@ -56,13 +59,15 @@ namespace Langulus::Fractalloc
    /// Get the max number of possible entries                                 
    /// (if all of them are as small as possible)                              
    ///   @return the size in bytes, always a power-of-two                     
+   LANGULUS(INLINED)
    constexpr Count Pool::GetMaxEntries() const noexcept {
       return mAllocatedByBackend / GetMinAllocation();
    }
 
    /// Free the whole pool chain                                              
    ///   @attention make sure this is called for the first pool in the chain  
-   inline void Pool::FreePoolChain() {
+   LANGULUS(INLINED)
+   void Pool::FreePoolChain() {
       if (mNext)
          mNext->FreePoolChain();
       ::std::free(mHandle);
@@ -70,6 +75,7 @@ namespace Langulus::Fractalloc
 
    /// Get the size of the Pool structure, rounded up for alignment           
    ///   @return the byte size of the pool, including alignment               
+   LANGULUS(INLINED)
    constexpr Size Pool::GetSize() noexcept {
       return sizeof(Pool) + Alignment - (sizeof(Pool) % Alignment);
    }
@@ -80,6 +86,7 @@ namespace Langulus::Fractalloc
    ///   @assumes size can contain at least one Allocation::GetMinAllocation  
    ///   @param size - the number of bytes to request for the pool            
    ///   @return the number of bytes to allocate for use in the pool          
+   LANGULUS(INLINED)
    constexpr Size Pool::GetNewAllocationSize(const Size& size) noexcept {
       constexpr Size minimum {Pool::DefaultPoolSize + Pool::GetSize()};
       return ::std::max(size + Pool::GetSize(), minimum);
@@ -88,7 +95,8 @@ namespace Langulus::Fractalloc
    /// Get the start of the usable memory for the pool                        
    ///   @return the start of the memory                                      
    template<class T>
-   inline T* Pool::GetPoolStart() noexcept {
+   LANGULUS(INLINED)
+   T* Pool::GetPoolStart() noexcept {
       const auto poolStart = reinterpret_cast<Byte*>(this);
       return reinterpret_cast<T*>(poolStart + Pool::GetSize());
    }
@@ -96,18 +104,21 @@ namespace Langulus::Fractalloc
    /// Get the start of the usable memory for the pool (const)                
    ///   @return the start of the memory                                      
    template<class T>
-   inline const T* Pool::GetPoolStart() const noexcept {
+   LANGULUS(INLINED)
+   const T* Pool::GetPoolStart() const noexcept {
       return const_cast<Pool*>(this)->template GetPoolStart<T>();
    }
 
    /// Get the true allocation size, as bytes requested from OS               
    ///   @return bytes allocated for the pool, including alignment/overhead   
+   LANGULUS(INLINED)
    constexpr Size Pool::GetAllocatedByBackend() const noexcept {
       return mAllocatedByBackend;
    }
 
    /// Get the allocation size, as bytes requested from client                
    ///   @return bytes allocated by the client                                
+   LANGULUS(INLINED)
    constexpr Size Pool::GetAllocatedByFrontend() const noexcept {
       return mAllocatedByFrontend;
    }
@@ -120,7 +131,7 @@ namespace Langulus::Fractalloc
 
       // Check if we can add a new entry                                
       const auto bytesWithPadding = Allocation::GetNewAllocationSize(bytes);
-      if (!CanContain(bytesWithPadding)) UNLIKELY()
+      if (not CanContain(bytesWithPadding)) UNLIKELY()
          return nullptr;
 
       Allocation* newEntry;
@@ -204,7 +215,7 @@ namespace Langulus::Fractalloc
    ///   @return true if entry was enlarged without conflict                  
    inline bool Pool::Reallocate(Allocation* entry, const Size bytes) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes,
-         bytes && Contains(entry) && entry && entry->GetUses(),
+         bytes and Contains(entry) and entry and entry->GetUses(),
          "Invalid reallocation");
 
       if (bytes > entry->mAllocatedBytes) {
@@ -244,21 +255,15 @@ namespace Langulus::Fractalloc
    ///   @attention assumes ptr is inside pool                                
    ///   @param ptr - the pointer to get the element index of                 
    ///   @return pointer to the valid allocation, or nullptr if unused        
-   inline Allocation* Pool::AllocationFromAddress(const void* ptr) IF_UNSAFE(noexcept) {
+   LANGULUS(INLINED)
+   const Allocation* Pool::AllocationFromAddress(const void* ptr) const IF_UNSAFE(noexcept) {
       const auto index = ValidateIndex(IndexFromAddress(ptr));
       return index == InvalidIndex ? nullptr : AllocationFromIndex(index);
    }
 
-   /// Get valid entry that corresponds to an arbitrary pointer               
-   ///   @attention assumes ptr is inside pool                                
-   ///   @param ptr - the pointer to get the element index of                 
-   ///   @return pointer to the valid allocation, or nullptr if unused        
-   inline const Allocation* Pool::AllocationFromAddress(const void* ptr) const noexcept {
-      return const_cast<Pool*>(this)->AllocationFromAddress(ptr);
-   }
-
    /// Check if there is any used memory                                      
    ///   @return true on at least one valid entry                             
+   LANGULUS(INLINED)
    constexpr bool Pool::IsInUse() const noexcept {
       return mAllocatedByFrontend > 0;
    }
@@ -267,18 +272,21 @@ namespace Langulus::Fractalloc
    ///   @attention assumes that bytes include any padding and overhead       
    ///   @param bytes - number of bytes to check                              
    ///   @return true if bytes can be contained in a new/recycled element     
+   LANGULUS(INLINED)
    constexpr bool Pool::CanContain(const Size& bytes) const noexcept {
-      return mThreshold >= mThresholdMin && bytes <= mThreshold;
+      return mThreshold >= mThresholdMin and bytes <= mThreshold;
    }
 
    /// Null the memory                                                        
-   inline void Pool::Null() {
+   LANGULUS(INLINED)
+   void Pool::Null() {
       ZeroMemory(mMemory, mAllocatedByBackend);
    }
 
    /// Touch unused memory                                                    
    /// https://stackoverflow.com/questions/18929011                           
-   inline void Pool::Touch() {
+   LANGULUS(INLINED)
+   void Pool::Touch() {
       auto it = mMemory;
       while (it < mMemoryEnd) {
          volatile auto touch = *it;
@@ -291,43 +299,39 @@ namespace Langulus::Fractalloc
    ///   @attention assumes index is not zero                                 
    ///   @param index - the index                                             
    ///   @return the threshold                                                
-   inline Size Pool::ThresholdFromIndex(const Offset& index) const noexcept {
+   LANGULUS(INLINED)
+   Size Pool::ThresholdFromIndex(const Offset& index) const noexcept {
       return Size {1} << (mAllocatedByBackendLSB - Inner::FastLog2(index));
    }
 
    /// Get allocation from index                                              
    ///   @param index - the index                                             
    ///   @return the allocation (not validated and constrained)               
-   inline Allocation* Pool::AllocationFromIndex(const Offset& index) noexcept {
-      // Credit goes to Vladislav Penchev (G2)                          
+   LANGULUS(INLINED)
+   const Allocation* Pool::AllocationFromIndex(const Offset& index) const noexcept {
+      // Credit goes to Vladislav Penchev                               
       if (index == 0)
-         return reinterpret_cast<Allocation*>(mMemory);
+         return reinterpret_cast<const Allocation*>(mMemory);
 
       constexpr Size one {1};
       const Size basePower = Inner::FastLog2(index);
       const Size baselessIndex = index - (one << basePower);
       const Size levelIndex = (baselessIndex << one) + one;
       const Size levelSize = (one << (mAllocatedByBackendLSB - basePower));
-      return reinterpret_cast<Allocation*>(mMemory + levelIndex * levelSize);
-   }
-
-   /// Get allocation from index (const)                                      
-   ///   @param index - the index                                             
-   ///   @return the allocation (not validated and constrained)               
-   inline const Allocation* Pool::AllocationFromIndex(const Offset& index) const noexcept {
-      return const_cast<Pool*>(this)->AllocationFromIndex(index);
+      return reinterpret_cast<const Allocation*>(mMemory + levelIndex * levelSize);
    }
 
    /// Get index from address                                                 
    ///   @attention assumes pointer is inside the pool                        
    ///   @param ptr - the address                                             
    ///   @return the index                                                    
-   inline Offset Pool::IndexFromAddress(const void* ptr) const IF_UNSAFE(noexcept) {
+   LANGULUS(INLINED)
+   Offset Pool::IndexFromAddress(const void* ptr) const IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, Contains(ptr), "Entry outside pool");
 
       // Credit goes to Yasen Vidolov (G1)                              
       const Offset i = static_cast<const Byte*>(ptr) - mMemory;
-      if (i < mThreshold || 0 == mEntries)
+      if (i < mThreshold or 0 == mEntries)
          return 0;
 
       // We got the index, but it is not constrained to the pool        
@@ -342,17 +346,19 @@ namespace Langulus::Fractalloc
    /// or shift it up until one is found                                      
    ///   @param index - index to validate                                     
    ///   @returns the valid index, or InvalidIndex if invalid                 
-   inline Offset Pool::ValidateIndex(Offset index) const noexcept {
+   LANGULUS(INLINED)
+   Offset Pool::ValidateIndex(Offset index) const noexcept {
       // Pool is empty, so search is pointless                          
       if (mEntries == 0)
          return InvalidIndex;
 
       // Step up until a valid entry inside bounds is hit               
-      while (index != 0 && (index >= mEntries || 0 == AllocationFromIndex(index)->GetUses()))
+      while (index != 0 and (index >= mEntries
+                         or 0 == AllocationFromIndex(index)->GetUses()))
          index = UpIndex(index);
 
       // Check if we reached root of pool and it is unused              
-      if (index == 0 && 0 == reinterpret_cast<const Allocation*>(mMemory)->GetUses())
+      if (index == 0 and 0 == reinterpret_cast<const Allocation*>(mMemory)->GetUses())
          return InvalidIndex;
       return index;
    }
@@ -360,7 +366,8 @@ namespace Langulus::Fractalloc
    /// Get index above another index                                          
    ///   @param index                                                         
    ///   @return index above the given one                                    
-   inline Offset Pool::UpIndex(const Offset index) const noexcept {
+   LANGULUS(INLINED)
+   Offset Pool::UpIndex(const Offset index) const noexcept {
       // Credit goes to Vladislav Penchev                               
       return index >> (Inner::LSB(index) + Offset {1});
    }
@@ -368,30 +375,23 @@ namespace Langulus::Fractalloc
    /// Check if a memory address resigns inside pool's range                  
    ///   @param address - address to check                                    
    ///   @return true if address belongs to this pool                         
-   inline bool Pool::Contains(const void* address) const noexcept {
-      return address >= mMemory && address < mMemory + mAllocatedByBackend;
+   LANGULUS(INLINED)
+   bool Pool::Contains(const void* address) const noexcept {
+      return address >= mMemory and address < mMemory + mAllocatedByBackend;
    }
 
    /// Find a memory entry from pointer                                       
    ///   @param memory - memory pointer                                       
    ///   @return the memory entry that manages the memory pointer, or         
    ///      nullptr if memory is not ours, or is no longer used               
-   inline Allocation* Pool::Find(const void* memory) IF_UNSAFE(noexcept) {
+   LANGULUS(INLINED)
+   const Allocation* Pool::Find(const void* memory) const IF_UNSAFE(noexcept) {
       if (Contains(memory)) {
          const auto entry = AllocationFromAddress(memory);
-         return entry && entry->Contains(memory) ? entry : nullptr;
+         return entry and entry->Contains(memory) ? entry : nullptr;
       }
 
       return nullptr;
-   }
-
-   /// Find a memory entry from pointer (const)                               
-   ///   @attention assumes memory is a valid pointer                         
-   ///   @param memory - memory pointer                                       
-   ///   @return the memory entry that manages the memory pointer, or         
-   ///      nullptr if memory is not ours, or is no longer used               
-   inline const Allocation* Pool::Find(const void* memory) const IF_UNSAFE(noexcept) {
-      return const_cast<Pool*>(this)->Find(memory);
    }
 
 } // namespace Langulus::Fractalloc

@@ -60,9 +60,8 @@ namespace Langulus::Fractalloc
       NOD() static constexpr Size GetMinAllocation() noexcept;
 
       NOD() constexpr const Count& GetUses() const noexcept;
-      NOD() const Byte* GetBlockStart() const noexcept;
+      NOD() Byte* GetBlockStart() const noexcept;
       NOD() const Byte* GetBlockEnd() const noexcept;
-      NOD() Byte* GetBlockStart() noexcept;
       NOD() constexpr Size GetTotalSize() const noexcept;
       NOD() constexpr const Size& GetAllocatedSize() const noexcept;
       NOD() bool Contains(const void*) const noexcept;
