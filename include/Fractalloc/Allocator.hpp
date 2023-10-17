@@ -78,7 +78,7 @@ namespace Langulus::Fractalloc
       // Default pool chain                                             
       Pool* mDefaultPoolChain {};
       // The last succesfull Find() result in default pool chain        
-      mutable Pool* mLastFoundPool {};
+      mutable const Pool* mLastFoundPool {};
 
       // Pool chains for types that use PoolTactic::Size                
       static constexpr Count SizeBuckets = sizeof(Size) * 8;
@@ -97,8 +97,8 @@ namespace Langulus::Fractalloc
       LANGULUS_API(FRACTALLOC)
       void CollectGarbageChain(Pool*&);
 
-      Allocation* FindInChain(const void*, Pool*) const IF_UNSAFE(noexcept);
-      bool ContainedInChain(const void*, Pool*) const IF_UNSAFE(noexcept);
+      const Allocation* FindInChain(const void*, const Pool*) const IF_UNSAFE(noexcept);
+      bool ContainedInChain(const void*, const Pool*) const IF_UNSAFE(noexcept);
 
    public:
       NOD() LANGULUS_API(FRACTALLOC)
@@ -111,7 +111,7 @@ namespace Langulus::Fractalloc
       static void Deallocate(Allocation*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Find(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
+      static const Allocation* Find(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
       static bool CheckAuthority(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
