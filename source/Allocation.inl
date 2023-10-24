@@ -14,6 +14,7 @@ namespace Langulus::Fractalloc
 {
    namespace Inner
    {
+
       /// Fast log2                                                           
       /// https://stackoverflow.com/questions/11376288                        
       ///   @param u - number                                                 
@@ -50,6 +51,7 @@ namespace Langulus::Fractalloc
             #error Implement for your architecture
          #endif
       }
+
    } // namespace Langulus::Anyness::Inner
 
 
