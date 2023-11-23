@@ -15,5 +15,3 @@ add_test(
 	NAME		LangulusFractallocTest 
 	COMMAND		LangulusFractallocTest
 )
-
-langulus_copy_dlls(LangulusFractallocTest ON LangulusFractallocTest)
