@@ -664,7 +664,8 @@ namespace Langulus::Fractalloc
             continue;
 
          const auto scope = Logger::Info(Logger::Purple, 
-            "SIZE POOL CHAIN FOR ", (1 << size) ,": ", Logger::Tabs {});
+            "SIZE POOL CHAIN FOR ", Logger::Red, (1 << size),
+            Logger::Purple, ": ", Logger::Tabs {});
          Count counter {};
          auto pool = Instance.mSizePoolChain[size];
          while (pool) {
@@ -682,12 +683,13 @@ namespace Langulus::Fractalloc
 
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
             const auto scope = Logger::Info(Logger::Purple, 
-               "TYPE POOL CHAIN FOR ", type->mCppName, 
-               " (BOUNDARY: ", Logger::Push, Logger::Underline, 
-               type->mLibraryName, Logger::Pop, "): ", Logger::Tabs {});
+               "TYPE POOL CHAIN FOR `", Logger::Red, type->mCppName, 
+               Logger::Purple, "` (BOUNDARY: ", Logger::Red,
+               type->mLibraryName, Logger::Purple, "): ", Logger::Tabs {});
          #else
             const auto scope = Logger::Info(Logger::Purple, 
-               "TYPE POOL CHAIN FOR ", type->mCppName, Logger::Tabs {});
+               "TYPE POOL CHAIN FOR `", Logger::Red, type->mCppName, 
+               Logger::Purple, '`', Logger::Tabs {});
          #endif
 
          Count counter = 0;
