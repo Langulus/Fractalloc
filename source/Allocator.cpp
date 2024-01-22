@@ -32,8 +32,8 @@ namespace Langulus::Fractalloc
 
       // Align pointer to the alignment LANGULUS was built with         
       auto ptr = reinterpret_cast<T*>(
-         (reinterpret_cast<Size>(base) + Alignment)
-         & ~(Alignment - Size {1})
+         (reinterpret_cast<Offset>(base) + Alignment)
+         & ~(Alignment - Offset {1})
       );
 
       // Place the entry there                                          
@@ -78,7 +78,7 @@ namespace Langulus::Fractalloc
          if (memory) {
             #if LANGULUS_FEATURE(MEMORY_STATISTICS)
                Instance.mStatistics.mEntries += 1;
-               Instance.mStatistics.mBytesAllocatedByFrontend += memory->GetTotalSize();
+               Instance.mStatistics.mBytesAllocatedByFrontend.mSize += memory->GetTotalSize();
             #endif
             return memory;
          }
@@ -155,8 +155,8 @@ namespace Langulus::Fractalloc
       // New size is bigger, precautions must be taken                  
       if (previous->mPool->Reallocate(previous, size)) {
          #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-            Instance.mStatistics.mBytesAllocatedByFrontend -= oldSize;
-            Instance.mStatistics.mBytesAllocatedByFrontend += previous->GetTotalSize();
+            Instance.mStatistics.mBytesAllocatedByFrontend.mSize -= oldSize;
+            Instance.mStatistics.mBytesAllocatedByFrontend.mSize += previous->GetTotalSize();
          #endif
          return previous;
       }
@@ -180,7 +180,7 @@ namespace Langulus::Fractalloc
          "Deallocating an allocation used from multiple places");
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-         Instance.mStatistics.mBytesAllocatedByFrontend -= entry->GetTotalSize();
+         Instance.mStatistics.mBytesAllocatedByFrontend.mSize -= entry->GetTotalSize();
          Instance.mStatistics.mEntries -= 1;
       #endif
 
@@ -373,12 +373,12 @@ namespace Langulus::Fractalloc
 
             // Finally, check all other size pool chains                
             // (pointer could be a member of differently sized type)    
-            for (Size i = 0; i < sizebucket; ++i) {
+            for (Offset i = 0; i < sizebucket; ++i) {
                result = Instance.FindInChain(memory, Instance.mSizePoolChain[i]);
                if (result)
                   return result;
             }
-            for (Size i = sizebucket + 1; i < SizeBuckets; ++i) {
+            for (Offset i = sizebucket + 1; i < SizeBuckets; ++i) {
                result = Instance.FindInChain(memory, Instance.mSizePoolChain[i]);
                if (result)
                   return result;
@@ -490,11 +490,11 @@ namespace Langulus::Fractalloc
 
             // Finally, check all other size pool chains                
             // (pointer could be a member of differently sized type)    
-            for (Size i = 0; i < sizebucket; ++i) {
+            for (Offset i = 0; i < sizebucket; ++i) {
                if (Instance.ContainedInChain(memory, Instance.mSizePoolChain[i]))
                   return true;
             }
-            for (Size i = sizebucket + 1; i < SizeBuckets; ++i) {
+            for (Offset i = sizebucket + 1; i < SizeBuckets; ++i) {
                if (Instance.ContainedInChain(memory, Instance.mSizePoolChain[i]))
                   return true;
             }
@@ -623,7 +623,7 @@ namespace Langulus::Fractalloc
                Logger::Info(ecounter, "] ", Logger::Green, entry->mAllocatedBytes, " bytes, ");
                Logger::Append(entry->mReferences, " references: `");
                auto raw = entry->GetBlockStart();
-               for (Size i = 0; i < ::std::min(Size {32}, entry->mAllocatedBytes); ++i) {
+               for (Offset i = 0; i < ::std::min(Size {32}, entry->mAllocatedBytes); ++i) {
                   if (::isprint(raw[i].mValue))
                      Logger::Append(static_cast<char>(raw[i].mValue));
                   else
@@ -659,7 +659,7 @@ namespace Langulus::Fractalloc
       }
 
       // Dump every size pool chain                                     
-      for (Size size = 0; size < sizeof(Size) * 8; ++size) {
+      for (Offset size = 0; size < sizeof(Size) * 8; ++size) {
          if (not Instance.mSizePoolChain[size])
             continue;
 
@@ -706,8 +706,8 @@ namespace Langulus::Fractalloc
    /// Account for a newly allocated pool                                     
    ///   @param pool - the pool to account for                                
    void Allocator::Statistics::AddPool(const Pool* pool) noexcept {
-      mBytesAllocatedByBackend += pool->GetTotalSize();
-      mBytesAllocatedByFrontend += pool->GetAllocatedByFrontend();
+      mBytesAllocatedByBackend.mSize += pool->GetTotalSize();
+      mBytesAllocatedByFrontend.mSize += pool->GetAllocatedByFrontend();
       ++mPools;
       ++mEntries;
    }
@@ -715,7 +715,7 @@ namespace Langulus::Fractalloc
    /// Account for a removed pool                                             
    ///   @param pool - the pool to account for                                
    void Allocator::Statistics::DelPool(const Pool* pool) noexcept {
-      mBytesAllocatedByBackend -= pool->GetTotalSize();
+      mBytesAllocatedByBackend.mSize -= pool->GetTotalSize();
       --mPools;
    }
 

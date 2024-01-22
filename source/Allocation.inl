@@ -10,6 +10,7 @@
 #include "Allocation.hpp"
 #include <Core/Utilities.hpp>
 
+
 namespace Langulus::Fractalloc
 {
    namespace Inner
@@ -20,9 +21,9 @@ namespace Langulus::Fractalloc
       ///   @param u - number                                                 
       ///   @return the log2                                                  
       LANGULUS(INLINED)
-      constexpr Size FastLog2(Size x) noexcept {
+      constexpr Size FastLog2(const Size x) noexcept {
          return x < 2 
-            ? 0 : Size{8 * sizeof(Size)} - ::std::countl_zero(x) - Size{1};
+            ? 0 : Size{8 * sizeof(Size)} - ::std::countl_zero(x.mSize) - Size{1};
       }
 
       /// Get least significant bit                                           
@@ -30,7 +31,7 @@ namespace Langulus::Fractalloc
       ///   @param n - number                                                 
       ///   @return the least significant bit                                 
       LANGULUS(INLINED)
-      constexpr Size LSB(const Size& n) noexcept {
+      constexpr Size LSB(const Size n) noexcept {
          #if LANGULUS(BITNESS) == 32
             constexpr Size DeBruijnBitPosition[32] = {
                0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
@@ -70,7 +71,7 @@ namespace Langulus::Fractalloc
    ///   @return the byte size of the entry, including alignment              
    LANGULUS(INLINED)
    constexpr Size Allocation::GetSize() noexcept {
-      static_assert(IsPowerOfTwo(Alignment),
+      static_assert(IsPowerOfTwo(Alignment.mSize),
          "Alignment is not a power-of-two number");
       return sizeof(Allocation) + Alignment - (sizeof(Allocation) % Alignment);
    }
