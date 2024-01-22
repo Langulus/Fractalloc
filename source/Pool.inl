@@ -28,8 +28,8 @@ namespace Langulus::Fractalloc
       , mThreshold {size}
       , mThresholdPrevious {size}
       , mThresholdMin {Roof2cexpr(meta 
-         ? meta->mAllocationPage 
-         : Allocation::GetMinAllocation())}
+         ? meta->mAllocationPage.mSize
+         : Allocation::GetMinAllocation().mSize)}
       , mMeta {meta}
       , mHandle {memory} {
       mMemory = GetPoolStart<Byte>();
@@ -88,7 +88,7 @@ namespace Langulus::Fractalloc
    ///   @return the number of bytes to allocate for use in the pool          
    LANGULUS(INLINED)
    constexpr Size Pool::GetNewAllocationSize(const Size& size) noexcept {
-      constexpr Size minimum {Pool::DefaultPoolSize + Pool::GetSize()};
+      constexpr auto minimum = Pool::DefaultPoolSize + Pool::GetSize();
       return ::std::max(size + Pool::GetSize(), minimum);
    }
 
@@ -130,7 +130,7 @@ namespace Langulus::Fractalloc
       constexpr Offset one {1};
 
       // Check if we can add a new entry                                
-      const auto bytesWithPadding = Allocation::GetNewAllocationSize(bytes);
+      const Offset bytesWithPadding = Allocation::GetNewAllocationSize(bytes);
       if (not CanContain(bytesWithPadding)) UNLIKELY()
          return nullptr;
 
@@ -154,7 +154,7 @@ namespace Langulus::Fractalloc
          if (mNextEntry >= mMemoryEnd) UNLIKELY() {
             // Reset carriage and shift level when it goes beyond       
             mThresholdPrevious = mThreshold;
-            mThreshold >>= one;
+            mThreshold.mSize >>= one;
             mNextEntry = mMemory + mThreshold;
          }
       }
@@ -170,7 +170,7 @@ namespace Langulus::Fractalloc
       LANGULUS_ASSUME(DevAssumes,
          mAllocatedByFrontend + bytesWithPadding >= mAllocatedByFrontend,
          "Frontend byte counter overflow");
-      mAllocatedByFrontend += bytesWithPadding;
+      mAllocatedByFrontend.mSize += bytesWithPadding;
       return newEntry;
    }
 
@@ -185,7 +185,7 @@ namespace Langulus::Fractalloc
       LANGULUS_ASSUME(DevAssumes, mAllocatedByFrontend >= entry->GetTotalSize(),
          "Bad frontend allocation size");
 
-      mAllocatedByFrontend -= entry->GetTotalSize();
+      mAllocatedByFrontend.mSize -= entry->GetTotalSize();
       entry->mReferences = 0;
 
       if (0 == mAllocatedByFrontend) {
@@ -233,7 +233,7 @@ namespace Langulus::Fractalloc
             // traverse abd stitch here?
          }
 
-         mAllocatedByFrontend += addition;
+         mAllocatedByFrontend.mSize += addition;
       }
       else {
          // We're shrinking the entry                                   
@@ -241,7 +241,7 @@ namespace Langulus::Fractalloc
          const auto removal = entry->mAllocatedBytes - bytes;
          LANGULUS_ASSUME(DevAssumes, mAllocatedByFrontend >= removal,
             "Bad frontend allocation size");
-         mAllocatedByFrontend -= removal;
+         mAllocatedByFrontend.mSize -= removal;
 
          //TODO: keep track of size distrubution, 
          // shrink min threshold if all leading buckets go empty
