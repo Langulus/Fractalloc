@@ -52,16 +52,16 @@ bool IsAligned(const void* a) noexcept {
 }
 
 SCENARIO("Testing CountLeadingZeroes calls", "[allocator]") {
-   const Size numbers[] {
+   const std::size_t numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
    };
 
    #if LANGULUS(BITNESS) == 32
-      const Size results[] {
+      const std::size_t results[] {
          32, 31, 30, 30, 29, 29, 29, 28, 27, 25, 25, 25, 24
       };
    #elif LANGULUS(BITNESS) == 64
-      const Size results[] {
+      const std::size_t results[] {
          64, 63, 62, 62, 61, 61, 61, 60, 59, 57, 57, 57, 56
       };
    #endif
@@ -78,16 +78,16 @@ SCENARIO("Testing CountLeadingZeroes calls", "[allocator]") {
 }
 
 SCENARIO("Testing CountTrailingZeroes calls", "[allocator]") {
-   const Size numbers[] {
+   const std::size_t numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
    };
 
    #if LANGULUS(BITNESS) == 32
-      const Size results[] {
+      const std::size_t results[] {
          32, 0, 1, 0, 2, 0, 1, 0, 4, 6, 0, 3, 7
       };
    #elif LANGULUS(BITNESS) == 64
-      const Size results[] {
+      const std::size_t results[] {
          64, 0, 1, 0, 2, 0, 1, 0, 4, 6, 0, 3, 7
       };
    #endif
@@ -182,7 +182,7 @@ SCENARIO("Testing FastLog2 calls", "[allocator]") {
 TEMPLATE_TEST_CASE("Testing GetAllocationPageOf<T> calls", "[allocator]", Type1, Type2, Type4, Type8, TypeBig, TypeVeryBig) {
    WHEN("GetAllocationPageOf<T> is executed") {
       THEN("Results should be correct") {
-         REQUIRE(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>()));
+         REQUIRE(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>().mSize));
          REQUIRE(RTTI::GetAllocationPageOf<TestType>() >= sizeof(TestType));
       }
    }
@@ -204,8 +204,8 @@ SCENARIO("Testing pool functions", "[allocator]") {
          const auto quarter = half / 2;
 
          THEN("Requirements should be met") {
-            REQUIRE(IsPowerOfTwo(pool->GetAllocatedByBackend()));
-            REQUIRE(IsPowerOfTwo(pool->GetMinAllocation()));
+            REQUIRE(IsPowerOfTwo(pool->GetAllocatedByBackend().mSize));
+            REQUIRE(IsPowerOfTwo(pool->GetMinAllocation().mSize));
             REQUIRE(IsPowerOfTwo(pool->GetMaxEntries()));
             REQUIRE(IsAligned(pool->GetPoolStart()));
             REQUIRE(pool->GetAllocatedByBackend() <= Pool::DefaultPoolSize*2);
@@ -443,7 +443,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
             entry->Keep(i);
 
             // Fill the entire entry to check for heap corruptions
-            for (Size i2 = 0; i2 < entry->GetAllocatedSize(); ++i2) {
+            for (Offset i2 = 0; i2 < entry->GetAllocatedSize(); ++i2) {
                entry->GetBlockStart()[i2] = {};
             }
          }
@@ -521,11 +521,11 @@ SCENARIO("Testing allocator functions", "[allocator]") {
             REQUIRE(entry->GetSize() % Alignment == 0);
             REQUIRE(entry->GetBlockStart() == reinterpret_cast<Byte*>(entry) + entry->GetSize());
             REQUIRE(entry->GetUses() == 1);
-            for (Size i = 0; i < 512; ++i) {
+            for (Offset i = 0; i < 512; ++i) {
                auto p = entry->GetBlockStart() + i;
                REQUIRE(entry->Contains(p));
             }
-            for (Size i = 512; i < 513; ++i) {
+            for (Offset i = 512; i < 513; ++i) {
                auto p = entry->GetBlockStart() + i;
                REQUIRE_FALSE(entry->Contains(p));
             }
