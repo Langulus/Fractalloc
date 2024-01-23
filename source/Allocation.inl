@@ -71,7 +71,7 @@ namespace Langulus::Fractalloc
    ///   @return the byte size of the entry, including alignment              
    LANGULUS(INLINED)
    constexpr Size Allocation::GetSize() noexcept {
-      static_assert(IsPowerOfTwo(Alignment.mSize),
+      static_assert(IsPowerOfTwo(Alignment),
          "Alignment is not a power-of-two number");
       return sizeof(Allocation) + Alignment - (sizeof(Allocation) % Alignment);
    }
