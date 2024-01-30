@@ -52,10 +52,10 @@ namespace Langulus::Fractalloc
       Allocation(Allocation&&) = delete;
       ~Allocation() = delete;
 
-      constexpr Allocation(const Size&, Pool*) noexcept;
+      constexpr Allocation(Size, Pool*) noexcept;
 
       NOD() static constexpr Size GetSize() noexcept;
-      NOD() static constexpr Size GetNewAllocationSize(const Size&) noexcept;
+      NOD() static constexpr Size GetNewAllocationSize(Size) noexcept;
       NOD() static constexpr Size GetMinAllocation() noexcept;
 
       NOD() constexpr const Count& GetUses() const noexcept;
@@ -70,9 +70,9 @@ namespace Langulus::Fractalloc
       NOD() T* As() const noexcept;
 
       constexpr void Keep() noexcept;
-      constexpr void Keep(const Count&) noexcept;
+      constexpr void Keep(Count) noexcept;
       constexpr void Free() noexcept;
-      constexpr void Free(const Count&) noexcept;
+      constexpr void Free(Count) noexcept;
    };
 
 } // namespace Langulus::Anyness

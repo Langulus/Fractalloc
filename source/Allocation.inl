@@ -62,7 +62,7 @@ namespace Langulus::Fractalloc
    ///   @param bytes - the number of allocated bytes                         
    ///   @param pool - the pool/handle of the entry                           
    LANGULUS(INLINED)
-   constexpr Allocation::Allocation(const Size& bytes, Pool* pool) noexcept
+   constexpr Allocation::Allocation(Size bytes, Pool* pool) noexcept
       : mAllocatedBytes {bytes}
       , mReferences {1}
       , mPool {pool} {}
@@ -81,7 +81,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the usable number of bytes required                    
    ///   @return the byte size for a new Allocation, including padding        
    LANGULUS(INLINED)
-   constexpr Size Allocation::GetNewAllocationSize(const Size& size) noexcept {
+   constexpr Size Allocation::GetNewAllocationSize(Size size) noexcept {
       const Size minimum  = Allocation::GetMinAllocation();
       const Size proposed = Allocation::GetSize() + size;
       return ::std::max(proposed, minimum);
@@ -153,8 +153,7 @@ namespace Langulus::Fractalloc
 
    /// Get the start of the entry as a given type                             
    ///   @return a pointer to the first element                               
-   template<class T>
-   LANGULUS(INLINED)
+   template<class T> LANGULUS(INLINED)
    T* Allocation::As() const noexcept {
       return reinterpret_cast<T*>(
          const_cast<Allocation*>(this)->GetBlockStart());
@@ -169,7 +168,7 @@ namespace Langulus::Fractalloc
    /// Reference the entry 'c' times                                          
    ///   @param c - the number of references to add                           
    LANGULUS(INLINED)
-   constexpr void Allocation::Keep(const Count& c) noexcept {
+   constexpr void Allocation::Keep(Count c) noexcept {
       mReferences += c;
    }
 
@@ -182,7 +181,7 @@ namespace Langulus::Fractalloc
    /// Dereference the entry 'c' times                                        
    ///   @param c - the number of references to remove                        
    LANGULUS(INLINED)
-   constexpr void Allocation::Free(const Count& c) noexcept {
+   constexpr void Allocation::Free(Count c) noexcept {
       mReferences -= c;
    }
 
