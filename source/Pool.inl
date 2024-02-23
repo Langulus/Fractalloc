@@ -7,8 +7,10 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
+#include "Allocation.inl"
 #include <Fractalloc/Allocator.hpp>
 #include <bit>
+
 
 namespace Langulus::Fractalloc
 {
@@ -21,7 +23,7 @@ namespace Langulus::Fractalloc
    ///   @param size - bytes of the usable block to initialize with           
    ///   @param memory - handle for use with std::free()                      
    LANGULUS(INLINED)
-   Pool::Pool(DMeta meta, const Size& size, void* memory) noexcept
+   Pool::Pool(DMeta meta, Size size, void* memory) noexcept
       : mAllocatedByBackend {size}
       , mAllocatedByBackendLog2 {Inner::FastLog2(size)}
       , mAllocatedByBackendLSB  {Inner::LSB(size >> Size{1})}
@@ -35,6 +37,10 @@ namespace Langulus::Fractalloc
       mMemory = GetPoolStart<Byte>();
       mMemoryEnd = mMemory + mAllocatedByBackend;
       mNextEntry = mMemory;
+
+      #if LANGULUS_FEATURE(MEMORY_STATISTICS)
+         mStep = Instance.GetStatistics().mStep;
+      #endif
 
       // Touching is mandatory for pools - without touching the         
       // memory, it might remain just a promise by the OS, making       
@@ -87,7 +93,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of bytes to request for the pool            
    ///   @return the number of bytes to allocate for use in the pool          
    LANGULUS(INLINED)
-   constexpr Size Pool::GetNewAllocationSize(const Size& size) noexcept {
+   constexpr Size Pool::GetNewAllocationSize(Size size) noexcept {
       constexpr auto minimum = Pool::DefaultPoolSize + Pool::GetSize();
       return ::std::max(size + Pool::GetSize(), minimum);
    }
@@ -127,7 +133,7 @@ namespace Langulus::Fractalloc
    ///   @param bytes - number of bytes to allocate                           
    ///   @return the new allocation, or nullptr if pool is full               
    inline Allocation* Pool::Allocate(const Size bytes) IF_UNSAFE(noexcept) {
-      constexpr Offset one {1};
+      constexpr Offset one = 1;
 
       // Check if we can add a new entry                                
       const Offset bytesWithPadding = Allocation::GetNewAllocationSize(bytes);
@@ -139,13 +145,15 @@ namespace Langulus::Fractalloc
          // Recycle entries                                             
          newEntry = mLastFreed;
          mLastFreed = mLastFreed->mNextFreeEntry;
-         new (newEntry) Allocation {bytesWithPadding - Allocation::GetSize(), this};
+         new (newEntry) Allocation {
+            bytesWithPadding - Allocation::GetSize(), this};
       }
       else {
          // The entire pool is full (or empty), skip search for free    
          // spot, add a new allocation directly	instead                 
          newEntry = reinterpret_cast<Allocation*>(mNextEntry);
-         new (newEntry) Allocation {bytesWithPadding - Allocation::GetSize(), this};
+         new (newEntry) Allocation {
+            bytesWithPadding - Allocation::GetSize(), this};
          ++mEntries;
 
          // Move carriage to the next entry                             
@@ -273,7 +281,7 @@ namespace Langulus::Fractalloc
    ///   @param bytes - number of bytes to check                              
    ///   @return true if bytes can be contained in a new/recycled element     
    LANGULUS(INLINED)
-   constexpr bool Pool::CanContain(const Size& bytes) const noexcept {
+   constexpr bool Pool::CanContain(Size bytes) const noexcept {
       return mThreshold >= mThresholdMin and bytes <= mThreshold;
    }
 
@@ -300,7 +308,7 @@ namespace Langulus::Fractalloc
    ///   @param index - the index                                             
    ///   @return the threshold                                                
    LANGULUS(INLINED)
-   Size Pool::ThresholdFromIndex(const Offset& index) const noexcept {
+   Size Pool::ThresholdFromIndex(Offset index) const noexcept {
       return Size {1} << (mAllocatedByBackendLSB - Inner::FastLog2(index));
    }
 
@@ -308,12 +316,12 @@ namespace Langulus::Fractalloc
    ///   @param index - the index                                             
    ///   @return the allocation (not validated and constrained)               
    LANGULUS(INLINED)
-   const Allocation* Pool::AllocationFromIndex(const Offset& index) const noexcept {
+   const Allocation* Pool::AllocationFromIndex(Offset index) const noexcept {
       // Credit goes to Vladislav Penchev                               
       if (index == 0)
          return reinterpret_cast<const Allocation*>(mMemory);
 
-      constexpr Size one {1};
+      constexpr Size one = 1;
       const Size basePower = Inner::FastLog2(index);
       const Size baselessIndex = index - (one << basePower);
       const Size levelIndex = (baselessIndex << one) + one;
@@ -335,7 +343,7 @@ namespace Langulus::Fractalloc
          return 0;
 
       // We got the index, but it is not constrained to the pool        
-      constexpr Offset one {1};
+      constexpr Offset one = 1;
       Offset index = ((mAllocatedByBackend + i) / (i & ~(i - one)) - one) >> one;
       while (index >= mEntries)
          index = UpIndex(index);

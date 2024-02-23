@@ -9,6 +9,7 @@
 #pragma once
 #include <Fractalloc/Allocator.hpp>
 
+
 namespace Langulus::Fractalloc
 {
 
@@ -50,13 +51,18 @@ namespace Langulus::Fractalloc
       // Next pool in the pool chain                                    
       Pool* mNext {};
 
+   #if LANGULUS_FEATURE(MEMORY_STATISTICS)
+      // Acts like a timestamp of when the allocation happened          
+      Count mStep;
+   #endif
+
    public:
       Pool() = delete;
       Pool(const Pool&) = delete;
       Pool(Pool&&) = delete;
       ~Pool() = delete;
 
-      Pool(DMeta, const Size&, void*) noexcept;
+      Pool(DMeta, Size, void*) noexcept;
 
       // Default pool allocation is 1 MB                                
       static constexpr Size DefaultPoolSize = 1024 * 1024;
@@ -64,7 +70,7 @@ namespace Langulus::Fractalloc
 
    public:
       NOD() static constexpr Size GetSize() noexcept;
-      NOD() static constexpr Size GetNewAllocationSize(const Size&) noexcept;
+      NOD() static constexpr Size GetNewAllocationSize(Size) noexcept;
 
       template<class T = Allocation>
       NOD() T* GetPoolStart() noexcept;
@@ -77,7 +83,7 @@ namespace Langulus::Fractalloc
       NOD() constexpr Size GetAllocatedByBackend() const noexcept;
       NOD() constexpr Size GetAllocatedByFrontend() const noexcept;
       NOD() constexpr bool IsInUse() const noexcept;
-      NOD() constexpr bool CanContain(const Size&) const noexcept;
+      NOD() constexpr bool CanContain(Size) const noexcept;
       NOD() bool Contains(const void*) const noexcept;
       NOD() const Allocation* Find(const void*) const IF_UNSAFE(noexcept);
 
@@ -88,8 +94,8 @@ namespace Langulus::Fractalloc
       void Null();
       void Touch();
 
-      NOD() Size ThresholdFromIndex(const Offset&) const noexcept;
-      NOD() const Allocation* AllocationFromIndex(const Offset&) const noexcept;
+      NOD() Size ThresholdFromIndex(Offset) const noexcept;
+      NOD() const Allocation* AllocationFromIndex(Offset) const noexcept;
       NOD() Offset IndexFromAddress(const void*) const IF_UNSAFE(noexcept);
       NOD() Offset ValidateIndex(Offset) const noexcept;
       NOD() Offset UpIndex(Offset) const noexcept;
@@ -97,5 +103,3 @@ namespace Langulus::Fractalloc
    };
 
 } // namespace Langulus::Fractalloc
-
-#include "Pool.inl"

@@ -10,6 +10,7 @@
 #include <catch2/catch.hpp>
 #include <random>
 
+
 /// See https://github.com/catchorg/Catch2/blob/devel/docs/tostring.md        
 CATCH_TRANSLATE_EXCEPTION(::Langulus::Exception const& ex) {
    #if LANGULUS(DEBUG)
@@ -68,12 +69,8 @@ SCENARIO("Testing CountLeadingZeroes calls", "[allocator]") {
 
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   WHEN("CountLeadingZeroes is executed") {
-      THEN("Results should be correct") {
-         for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
-            REQUIRE(CountLeadingZeroes(numbers[i]) == static_cast<int>(results[i]));
-         }
-      }
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
+      REQUIRE(CountLeadingZeroes(numbers[i]) == static_cast<int>(results[i]));
    }
 }
 
@@ -94,12 +91,8 @@ SCENARIO("Testing CountTrailingZeroes calls", "[allocator]") {
 
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   WHEN("CountTrailingZeroes is executed") {
-      THEN("Results should be correct") {
-         for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
-            REQUIRE(CountTrailingZeroes(numbers[i]) == static_cast<int>(results[i]));
-         }
-      }
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
+      REQUIRE(CountTrailingZeroes(numbers[i]) == static_cast<int>(results[i]));
    }
 }
 
@@ -113,12 +106,8 @@ TEMPLATE_TEST_CASE("Testing IsPowerOfTwo calls", "[allocator]", uint8_t, uint16_
    };
    static_assert(sizeof(numbers)/sizeof(T) == sizeof(results)/sizeof(bool), "Oops");
 
-   WHEN("IsPowerOfTwo is executed") {
-      THEN("Results should be correct") {
-         for (unsigned i = 0; i < sizeof(numbers) / sizeof(T); ++i) {
-            REQUIRE(IsPowerOfTwo(numbers[i]) == results[i]);
-         }
-      }
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(T); ++i) {
+      REQUIRE(IsPowerOfTwo(numbers[i]) == results[i]);
    }
 }
 
@@ -133,16 +122,14 @@ TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]", uint8_t, uint16_t, uint
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
    WHEN("Roof2 is executed") {
-      THEN("Results should be correct") {
-         for (unsigned i = 0; i < sizeof(numbers) / sizeof(T); ++i) {
-            if (numbers[i] <= 128 || sizeof(T) > 1) {
-               REQUIRE(Roof2<true>(numbers[i]) == results[i]);
-               REQUIRE(Roof2cexpr<true>(numbers[i]) == results[i]);
-            }
-            else {
-               REQUIRE_THROWS_AS(Roof2<true>(numbers[i]), Except::Overflow);
-               REQUIRE_THROWS_AS(Roof2cexpr<true>(numbers[i]), Except::Overflow);
-            }
+      for (unsigned i = 0; i < sizeof(numbers) / sizeof(T); ++i) {
+         if (numbers[i] <= 128 || sizeof(T) > 1) {
+            REQUIRE(Roof2<true>(numbers[i]) == results[i]);
+            REQUIRE(Roof2cexpr<true>(numbers[i]) == results[i]);
+         }
+         else {
+            REQUIRE_THROWS_AS(Roof2<true>(numbers[i]), Except::Overflow);
+            REQUIRE_THROWS_AS(Roof2cexpr<true>(numbers[i]), Except::Overflow);
          }
       }
 
@@ -170,22 +157,14 @@ SCENARIO("Testing FastLog2 calls", "[allocator]") {
    };
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   WHEN("FastLog2 is executed") {
-      THEN("Results should be correct") {
-         for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
-            REQUIRE(Fractalloc::Inner::FastLog2(numbers[i]) == results[i]);
-         }
-      }
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
+      REQUIRE(Fractalloc::Inner::FastLog2(numbers[i]) == results[i]);
    }
 }
 
 TEMPLATE_TEST_CASE("Testing GetAllocationPageOf<T> calls", "[allocator]", Type1, Type2, Type4, Type8, TypeBig, TypeVeryBig) {
-   WHEN("GetAllocationPageOf<T> is executed") {
-      THEN("Results should be correct") {
-         REQUIRE(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>().mSize));
-         REQUIRE(RTTI::GetAllocationPageOf<TestType>() >= sizeof(TestType));
-      }
-   }
+   REQUIRE(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>().mSize));
+   REQUIRE(RTTI::GetAllocationPageOf<TestType>() >= sizeof(TestType));
 }
 
 SCENARIO("Testing pool functions", "[allocator]") {
@@ -203,41 +182,39 @@ SCENARIO("Testing pool functions", "[allocator]") {
          const auto half = full / 2;
          const auto quarter = half / 2;
 
-         THEN("Requirements should be met") {
-            REQUIRE(IsPowerOfTwo(pool->GetAllocatedByBackend().mSize));
-            REQUIRE(IsPowerOfTwo(pool->GetMinAllocation().mSize));
-            REQUIRE(IsPowerOfTwo(pool->GetMaxEntries()));
-            REQUIRE(IsAligned(pool->GetPoolStart()));
-            REQUIRE(pool->GetAllocatedByBackend() <= Pool::DefaultPoolSize*2);
-            REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(0)) == origin);
-            REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(1)) == origin + half);
-            REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(2)) == origin + quarter);
-            REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(3)) == origin + quarter + half);
-            REQUIRE(pool->ThresholdFromIndex(1) == half);
-            REQUIRE(pool->ThresholdFromIndex(2) == quarter);
-            REQUIRE(pool->ThresholdFromIndex(3) == quarter);
-            REQUIRE(pool->ThresholdFromIndex(4) == quarter / 2);
-            REQUIRE(pool->ThresholdFromIndex(5) == quarter / 2);
-            REQUIRE(pool->ThresholdFromIndex(6) == quarter / 2);
-            REQUIRE(pool->ThresholdFromIndex(7) == quarter / 2);
-            REQUIRE(pool->ThresholdFromIndex(8) == quarter / 4);
-            REQUIRE(pool->ThresholdFromIndex(pool->GetMaxEntries() - 1) == smallest);
-            REQUIRE(pool->ThresholdFromIndex(pool->GetMaxEntries()) == smallest / 2);
-            REQUIRE(pool->CanContain(1));
-            REQUIRE(pool->CanContain(Alignment));
-            REQUIRE(pool->CanContain(smallest));
-            REQUIRE(pool->CanContain(half));
-            REQUIRE(pool->CanContain(full));
-            REQUIRE_FALSE(pool->CanContain(full + 1));
-            REQUIRE(pool->GetAllocatedByFrontend() == 0);
-            REQUIRE(pool->GetMaxEntries() == full / smallest);
-            REQUIRE(pool->Contains(originPtr));
-            REQUIRE(pool->Contains(originPtr + half));
-            REQUIRE(pool->Contains(originPtr + half * 2 - 1));
-            REQUIRE_FALSE(pool->Contains(originPtr + half * 2));
-            REQUIRE_FALSE(pool->Contains(nullptr));
-            REQUIRE_FALSE(pool->IsInUse());
-         }
+         REQUIRE(IsPowerOfTwo(pool->GetAllocatedByBackend().mSize));
+         REQUIRE(IsPowerOfTwo(pool->GetMinAllocation().mSize));
+         REQUIRE(IsPowerOfTwo(pool->GetMaxEntries()));
+         REQUIRE(IsAligned(pool->GetPoolStart()));
+         REQUIRE(pool->GetAllocatedByBackend() <= Pool::DefaultPoolSize*2);
+         REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(0)) == origin);
+         REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(1)) == origin + half);
+         REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(2)) == origin + quarter);
+         REQUIRE(reinterpret_cast<Pointer>(pool->AllocationFromIndex(3)) == origin + quarter + half);
+         REQUIRE(pool->ThresholdFromIndex(1) == half);
+         REQUIRE(pool->ThresholdFromIndex(2) == quarter);
+         REQUIRE(pool->ThresholdFromIndex(3) == quarter);
+         REQUIRE(pool->ThresholdFromIndex(4) == quarter / 2);
+         REQUIRE(pool->ThresholdFromIndex(5) == quarter / 2);
+         REQUIRE(pool->ThresholdFromIndex(6) == quarter / 2);
+         REQUIRE(pool->ThresholdFromIndex(7) == quarter / 2);
+         REQUIRE(pool->ThresholdFromIndex(8) == quarter / 4);
+         REQUIRE(pool->ThresholdFromIndex(pool->GetMaxEntries() - 1) == smallest);
+         REQUIRE(pool->ThresholdFromIndex(pool->GetMaxEntries()) == smallest / 2);
+         REQUIRE(pool->CanContain(1));
+         REQUIRE(pool->CanContain(Alignment));
+         REQUIRE(pool->CanContain(smallest));
+         REQUIRE(pool->CanContain(half));
+         REQUIRE(pool->CanContain(full));
+         REQUIRE_FALSE(pool->CanContain(full + 1));
+         REQUIRE(pool->GetAllocatedByFrontend() == 0);
+         REQUIRE(pool->GetMaxEntries() == full / smallest);
+         REQUIRE(pool->Contains(originPtr));
+         REQUIRE(pool->Contains(originPtr + half));
+         REQUIRE(pool->Contains(originPtr + half * 2 - 1));
+         REQUIRE_FALSE(pool->Contains(originPtr + half * 2));
+         REQUIRE_FALSE(pool->Contains(nullptr));
+         REQUIRE_FALSE(pool->IsInUse());
 
          Allocator::DeallocatePool(pool);
       }
@@ -250,12 +227,10 @@ SCENARIO("Testing pool functions", "[allocator]") {
          const auto full = pool->GetAllocatedByBackend();
          const auto smallest = pool->GetMinAllocation();
 
-         THEN("Requirements should be met") {
-            REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
-            REQUIRE(pool->GetMaxEntries() == full / smallest);
-            REQUIRE(pool->Contains(entry));
-            REQUIRE(pool->IsInUse());
-         }
+         REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
+         REQUIRE(pool->GetMaxEntries() == full / smallest);
+         REQUIRE(pool->Contains(entry));
+         REQUIRE(pool->IsInUse());
 
          Allocator::DeallocatePool(pool);
       }
@@ -272,12 +247,10 @@ SCENARIO("Testing pool functions", "[allocator]") {
          const auto full = pool->GetAllocatedByBackend();
          const auto smallest = pool->GetMinAllocation();
 
-         THEN("Requirements should be met") {
-            REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
-            REQUIRE(pool->GetMaxEntries() == full / smallest);
-            REQUIRE(pool->Contains(entry));
-            REQUIRE(pool->IsInUse());
-         }
+         REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
+         REQUIRE(pool->GetMaxEntries() == full / smallest);
+         REQUIRE(pool->Contains(entry));
+         REQUIRE(pool->IsInUse());
 
          #ifdef LANGULUS_STD_BENCHMARK // Last result: 
             BENCHMARK_ADVANCED("Pool::Allocate(5)") (timer meter) {
@@ -457,14 +430,12 @@ SCENARIO("Testing pool functions", "[allocator]") {
          const auto full = pool->GetAllocatedByBackend();
          const auto smallest = pool->GetMinAllocation();
 
-         THEN("Requirements should be met") {
-            REQUIRE(pool->GetAllocatedByFrontend() == pool->GetMaxEntries() * Allocation::GetNewAllocationSize(5));
-            REQUIRE(pool->GetMaxEntries() == full / smallest);
-            for (Count i = 0; i < pool->GetMaxEntries(); ++i) {
-               auto entry = pool->AllocationFromIndex(i);
-               REQUIRE(pool->Contains(entry));
-               REQUIRE(entry->GetUses() == 1 + i);
-            }
+         REQUIRE(pool->GetAllocatedByFrontend() == pool->GetMaxEntries() * Allocation::GetNewAllocationSize(5));
+         REQUIRE(pool->GetMaxEntries() == full / smallest);
+         for (Count i = 0; i < pool->GetMaxEntries(); ++i) {
+            auto entry = pool->AllocationFromIndex(i);
+            REQUIRE(pool->Contains(entry));
+            REQUIRE(entry->GetUses() == 1 + i);
          }
 
          Allocator::DeallocatePool(pool);
@@ -474,14 +445,12 @@ SCENARIO("Testing pool functions", "[allocator]") {
          pool = Allocator::AllocatePool(nullptr, Pool::DefaultPoolSize);
          auto entry = pool->Allocate(Allocation::GetMinAllocation());
 
-         THEN("Requirements should be met") {
-            REQUIRE(entry);
-            REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
-            REQUIRE(pool->GetMinAllocation() == Roof2(entry->GetTotalSize()));
-            REQUIRE(pool->GetMaxEntries() == pool->GetAllocatedByBackend() / pool->GetMinAllocation());
-            REQUIRE(pool->Contains(entry));
-            REQUIRE(pool->IsInUse());
-         }
+         REQUIRE(entry);
+         REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
+         REQUIRE(pool->GetMinAllocation() == Roof2(entry->GetTotalSize()));
+         REQUIRE(pool->GetMaxEntries() == pool->GetAllocatedByBackend() / pool->GetMinAllocation());
+         REQUIRE(pool->Contains(entry));
+         REQUIRE(pool->IsInUse());
 
          Allocator::DeallocatePool(pool);
       }
@@ -490,11 +459,9 @@ SCENARIO("Testing pool functions", "[allocator]") {
          pool = Allocator::AllocatePool(nullptr, Pool::DefaultPoolSize);
          auto entry = pool->Allocate(Pool::DefaultPoolSize * 2);
 
-         THEN("The resulting allocation should be invalid") {
-            REQUIRE(entry == nullptr);
-            REQUIRE(pool->GetAllocatedByFrontend() == 0);
-            REQUIRE_FALSE(pool->IsInUse());
-         }
+         REQUIRE(entry == nullptr);
+         REQUIRE(pool->GetAllocatedByFrontend() == 0);
+         REQUIRE_FALSE(pool->IsInUse());
 
          Allocator::DeallocatePool(pool);
       }
@@ -510,25 +477,23 @@ SCENARIO("Testing allocator functions", "[allocator]") {
 
          entry = Allocator::Allocate(nullptr, 512);
 
-         THEN("Requirements should be met") {
-            REQUIRE(entry);
-            REQUIRE(entry->GetBlockStart() != nullptr);
-            REQUIRE(entry->GetBlockStart() != reinterpret_cast<Byte*>(entry));
-            REQUIRE(reinterpret_cast<Pointer>(entry) % Alignment == 0);
-            REQUIRE(reinterpret_cast<Pointer>(entry->GetBlockStart()) % Alignment == 0);
-            REQUIRE(entry->GetAllocatedSize() >= 512);
-            REQUIRE(entry->GetBlockEnd() == entry->GetBlockStart() + entry->GetAllocatedSize());
-            REQUIRE(entry->GetSize() % Alignment == 0);
-            REQUIRE(entry->GetBlockStart() == reinterpret_cast<Byte*>(entry) + entry->GetSize());
-            REQUIRE(entry->GetUses() == 1);
-            for (Offset i = 0; i < 512; ++i) {
-               auto p = entry->GetBlockStart() + i;
-               REQUIRE(entry->Contains(p));
-            }
-            for (Offset i = 512; i < 513; ++i) {
-               auto p = entry->GetBlockStart() + i;
-               REQUIRE_FALSE(entry->Contains(p));
-            }
+         REQUIRE(entry);
+         REQUIRE(entry->GetBlockStart() != nullptr);
+         REQUIRE(entry->GetBlockStart() != reinterpret_cast<Byte*>(entry));
+         REQUIRE(reinterpret_cast<Pointer>(entry) % Alignment == 0);
+         REQUIRE(reinterpret_cast<Pointer>(entry->GetBlockStart()) % Alignment == 0);
+         REQUIRE(entry->GetAllocatedSize() >= 512);
+         REQUIRE(entry->GetBlockEnd() == entry->GetBlockStart() + entry->GetAllocatedSize());
+         REQUIRE(entry->GetSize() % Alignment == 0);
+         REQUIRE(entry->GetBlockStart() == reinterpret_cast<Byte*>(entry) + entry->GetSize());
+         REQUIRE(entry->GetUses() == 1);
+         for (Offset i = 0; i < 512; ++i) {
+            auto p = entry->GetBlockStart() + i;
+            REQUIRE(entry->Contains(p));
+         }
+         for (Offset i = 512; i < 513; ++i) {
+            auto p = entry->GetBlockStart() + i;
+            REQUIRE_FALSE(entry->Contains(p));
          }
 
          Allocator::Deallocate(entry);
@@ -639,12 +604,10 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          REQUIRE(entry);
          entry->Keep();
 
-         THEN("Requirements should be met") {
-            REQUIRE(entry->GetUses() == 2);
-            REQUIRE(Allocator::CheckAuthority(nullptr, entry));
-            REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry));
-         }
+         REQUIRE(entry->GetUses() == 2);
+         REQUIRE(Allocator::CheckAuthority(nullptr, entry));
+         REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry));
 
          IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free();
@@ -658,12 +621,10 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          REQUIRE(entry);
          entry->Keep(5);
 
-         THEN("Requirements should be met") {
-            REQUIRE(entry->GetUses() == 6);
-            REQUIRE(Allocator::CheckAuthority(nullptr, entry));
-            REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry));
-         }
+         REQUIRE(entry->GetUses() == 6);
+         REQUIRE(Allocator::CheckAuthority(nullptr, entry));
+         REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry));
 
          IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free(5);
@@ -678,12 +639,10 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          entry->Keep();
          entry->Free();
 
-         THEN("Requirements should be met") {
-            REQUIRE(entry->GetUses() == 1);
-            REQUIRE(Allocator::CheckAuthority(nullptr, entry));
-            REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry));
-         }
+         REQUIRE(entry->GetUses() == 1);
+         REQUIRE(Allocator::CheckAuthority(nullptr, entry));
+         REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry));
 
          Allocator::Deallocate(entry);
       }
@@ -696,12 +655,10 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          entry->Keep(5);
          entry->Free(4);
 
-         THEN("Requirements should be met") {
-            REQUIRE(entry->GetUses() == 2);
-            REQUIRE(Allocator::CheckAuthority(nullptr, entry));
-            REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry));
-         }
+         REQUIRE(entry->GetUses() == 2);
+         REQUIRE(Allocator::CheckAuthority(nullptr, entry));
+         REQUIRE(Allocator::Find(nullptr, entry->GetBlockStart()));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry));
 
          IF_SAFE(REQUIRE_THROWS(Allocator::Deallocate(entry)));
          entry->Free(1);
@@ -715,11 +672,9 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          REQUIRE(entry);
          Allocator::Deallocate(entry);
 
-         THEN("We shouldn't be able to access the memory any longer, but it is still under jurisdiction") {
-            REQUIRE(Allocator::CheckAuthority(nullptr, entry));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry->GetBlockStart()));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry));
-         }
+         REQUIRE(Allocator::CheckAuthority(nullptr, entry));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry->GetBlockStart()));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry));
       }
 
       WHEN("Dereferenced multiple times with deletion") {
@@ -733,11 +688,9 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          entry->Free(5);
          Allocator::Deallocate(entry);
 
-         THEN("We shouldn't be able to access the memory any longer, but it is still under jurisdiction") {
-            REQUIRE(Allocator::CheckAuthority(nullptr, entry));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry->GetBlockStart()));
-            REQUIRE_FALSE(Allocator::Find(nullptr, entry));
-         }
+         REQUIRE(Allocator::CheckAuthority(nullptr, entry));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry->GetBlockStart()));
+         REQUIRE_FALSE(Allocator::Find(nullptr, entry));
       }
    }
 }

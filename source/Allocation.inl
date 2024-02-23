@@ -97,7 +97,7 @@ namespace Langulus::Fractalloc
    /// Check if the memory of the entry is in use                             
    ///   @return true if entry has any references                             
    LANGULUS(INLINED)
-   constexpr const Count& Allocation::GetUses() const noexcept {
+   constexpr Count Allocation::GetUses() const noexcept {
       return mReferences;
    }
 
@@ -126,7 +126,7 @@ namespace Langulus::Fractalloc
    /// Get the number of allocated bytes in this entry                        
    ///   @return the byte size of usable memory region                        
    LANGULUS(INLINED)
-   constexpr const Size& Allocation::GetAllocatedSize() const noexcept {
+   constexpr Size Allocation::GetAllocatedSize() const noexcept {
       return mAllocatedBytes;
    }
 

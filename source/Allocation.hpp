@@ -46,6 +46,11 @@ namespace Langulus::Fractalloc
          Allocation* mNextFreeEntry;
       };
 
+   #if LANGULUS_FEATURE(MEMORY_STATISTICS)
+      // Acts like a timestamp of when the allocation happened          
+      Count mStep;
+   #endif
+
    public:
       Allocation() = delete;
       Allocation(const Allocation&) = delete;
@@ -58,11 +63,11 @@ namespace Langulus::Fractalloc
       NOD() static constexpr Size GetNewAllocationSize(Size) noexcept;
       NOD() static constexpr Size GetMinAllocation() noexcept;
 
-      NOD() constexpr const Count& GetUses() const noexcept;
+      NOD() constexpr Count GetUses() const noexcept;
       NOD() Byte* GetBlockStart() const noexcept;
       NOD() const Byte* GetBlockEnd() const noexcept;
       NOD() constexpr Size GetTotalSize() const noexcept;
-      NOD() constexpr const Size& GetAllocatedSize() const noexcept;
+      NOD() constexpr Size GetAllocatedSize() const noexcept;
       NOD() bool Contains(const void*) const noexcept;
       NOD() bool CollisionFree(const Allocation&) const noexcept;
 
@@ -76,5 +81,3 @@ namespace Langulus::Fractalloc
    };
 
 } // namespace Langulus::Anyness
-
-#include "Allocation.inl"

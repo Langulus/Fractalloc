@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <optional>
 
+
 namespace Langulus::Fractalloc
 {
 
@@ -35,6 +36,9 @@ namespace Langulus::Fractalloc
             Count mEntries {};
             // Number of registered pools                               
             Count mPools {};
+            // Increases with each call to State::Assert, used to       
+            // diff pools                                               
+            Count mStep {};
 
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                // Number of registered meta datas                       
@@ -45,7 +49,7 @@ namespace Langulus::Fractalloc
                Count mVerbDefinitions {};
             #endif
 
-            bool operator == (const Statistics&) const noexcept = default;
+            bool operator == (const Statistics&) const noexcept;
 
             void AddPool(const Pool*) noexcept;
             void DelPool(const Pool*) noexcept;
@@ -102,10 +106,10 @@ namespace Langulus::Fractalloc
 
    public:
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Allocate(RTTI::DMeta, const Size&) IF_UNSAFE(noexcept);
+      static Allocation* Allocate(RTTI::DMeta, Size) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Reallocate(const Size&, Allocation*) IF_UNSAFE(noexcept);
+      static Allocation* Reallocate(Size, Allocation*) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
       static void Deallocate(Allocation*) IF_UNSAFE(noexcept);
@@ -117,7 +121,7 @@ namespace Langulus::Fractalloc
       static bool CheckAuthority(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Pool* AllocatePool(DMeta, const Size&) IF_UNSAFE(noexcept);
+      static Pool* AllocatePool(DMeta, Size) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
       static void DeallocatePool(Pool*) IF_UNSAFE(noexcept);
@@ -136,6 +140,9 @@ namespace Langulus::Fractalloc
 
          LANGULUS_API(FRACTALLOC)
          static void DumpPools() noexcept;
+
+         LANGULUS_API(FRACTALLOC)
+         static void Diff(const Statistics&) noexcept;
       #endif
    };
 
@@ -146,3 +153,6 @@ namespace Langulus::Fractalloc
    LANGULUS_API(FRACTALLOC) extern Allocator Instance;
 
 } // namespace Langulus::Fractalloc
+
+#include "../source/Allocation.inl"
+#include "../source/Pool.inl"
