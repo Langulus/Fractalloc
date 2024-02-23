@@ -8,6 +8,9 @@
 ///                                                                           
 #include <Fractalloc/Allocator.hpp>
 #include <RTTI/Assume.hpp>
+#include "Pool.inl"
+#include "Allocation.inl"
+
 
 namespace Langulus::Fractalloc
 {
@@ -24,7 +27,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of client bytes to allocate                 
    ///   @return a newly allocated memory that is correctly aligned           
    template<AllocationPrimitive T>
-   T* AlignedAllocate(DMeta hint, const Size& size) IF_UNSAFE(noexcept) {
+   T* AlignedAllocate(DMeta hint, Size size) IF_UNSAFE(noexcept) {
       const auto finalSize = T::GetNewAllocationSize(size) + Alignment;
       const auto base = ::std::malloc(finalSize);
       if (not base)
@@ -51,7 +54,7 @@ namespace Langulus::Fractalloc
    ///   @param hint - optional meta data to associate pool with              
    ///   @param size - the number of bytes to allocate                        
    ///   @return the allocation, or nullptr if out of memory                  
-   Allocation* Allocator::Allocate(RTTI::DMeta hint, const Size& size) IF_UNSAFE(noexcept) {
+   Allocation* Allocator::Allocate(RTTI::DMeta hint, Size size) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, size, "Zero allocation is not allowed");
 
       // Decide pool chain, based on hint                               
@@ -138,7 +141,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of bytes to allocate                        
    ///   @param previous - the previous memory entry                          
    ///   @return the reallocated memory entry, or nullptr if out of memory    
-   Allocation* Allocator::Reallocate(const Size& size, Allocation* previous) IF_UNSAFE(noexcept) {
+   Allocation* Allocator::Reallocate(Size size, Allocation* previous) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, previous,
          "Reallocating nullptr");
       LANGULUS_ASSUME(DevAssumes, size != previous->GetAllocatedSize(),
@@ -192,7 +195,7 @@ namespace Langulus::Fractalloc
    ///   @param hint - optional meta data to associate pool with              
    ///   @param size - size of the pool (in bytes)                            
    ///   @return a pointer to the new pool                                    
-   Pool* Allocator::AllocatePool(DMeta hint, const Size& size) IF_UNSAFE(noexcept) {
+   Pool* Allocator::AllocatePool(DMeta hint, Size size) IF_UNSAFE(noexcept) {
       const auto poolSize = ::std::max(Pool::DefaultPoolSize, Roof2(size));
       return AlignedAllocate<Pool>(hint, poolSize);
    }
@@ -556,6 +559,15 @@ namespace Langulus::Fractalloc
    }
    
 #if LANGULUS_FEATURE(MEMORY_STATISTICS)
+   bool Allocator::Statistics::operator == (const Statistics& rhs) const noexcept {
+      return mBytesAllocatedByBackend == rhs.mBytesAllocatedByBackend
+         and mBytesAllocatedByFrontend == rhs.mBytesAllocatedByFrontend
+         and mEntries == rhs.mEntries
+         and mPools == rhs.mPools
+         and mDataDefinitions == rhs.mDataDefinitions
+         and mTraitDefinitions == rhs.mTraitDefinitions
+         and mVerbDefinitions == rhs.mVerbDefinitions;
+   }
 
    /// Check for memory leaks, by retrieving the new memory manager state     
    /// and comparing it against this one                                      
@@ -567,13 +579,16 @@ namespace Langulus::Fractalloc
          if (mState != GetStatistics()) {
             // Assertion failure                                        
             DumpPools();
+            Diff(mState.value());
             mState = GetStatistics();
+            ++Instance.mStatistics.mStep;
             return false;
          }
       }
 
       // All is fine                                                    
       mState = GetStatistics();
+      ++Instance.mStatistics.mStep;
       return true;
    }
    
@@ -701,6 +716,104 @@ namespace Langulus::Fractalloc
       }
 
       Logger::Info("------------------  MANAGED MEMORY POOL DUMP END  ------------------");
+   }
+
+   /// Compare two statistics snapshots, and find the difference              
+   void Allocator::Diff(const Statistics& with) noexcept {
+      Logger::Info("------------------    MANAGED MEMORY DIFF START   ------------------");
+
+      if (Instance.mStatistics.mBytesAllocatedByBackend != with.mBytesAllocatedByBackend) {
+         Logger::Info(Logger::Purple, "Allocated byte difference: ",
+            int(Instance.mStatistics.mBytesAllocatedByBackend) - int(with.mBytesAllocatedByBackend));
+      }
+
+      if (Instance.mStatistics.mBytesAllocatedByFrontend != with.mBytesAllocatedByFrontend) {
+         Logger::Info(Logger::Purple, "Used byte difference: ",
+            int(Instance.mStatistics.mBytesAllocatedByFrontend) - int(with.mBytesAllocatedByFrontend));
+      }
+
+      if (Instance.mStatistics.mDataDefinitions != with.mDataDefinitions) {
+         const auto scope = Logger::Info(Logger::Purple, "Data definitions difference: ",
+            int(Instance.mStatistics.mDataDefinitions) - int(with.mDataDefinitions),
+            Logger::Tabs {});
+      }
+
+      if (Instance.mStatistics.mPools != with.mPools) {
+         const auto scope = Logger::Info(Logger::Purple, "Pool difference: ",
+            int(Instance.mStatistics.mPools) - int(with.mPools),
+            Logger::Tabs {});
+
+         // Diff default pool chain                                     
+         if (Instance.mDefaultPoolChain) {
+            Count counter = 0;
+            auto pool = Instance.mDefaultPoolChain;
+            while (pool) {
+               if (pool->mStep > with.mStep) {
+                  Logger::Info(Logger::Purple, "Default pool: ");
+                  DumpPool(counter, pool);
+               }
+               pool = pool->mNext;
+               ++counter;
+            }
+         }
+
+         // Dump every size pool chain                                  
+         for (Offset size = 0; size < sizeof(Size) * 8; ++size) {
+            if (not Instance.mSizePoolChain[size])
+               continue;
+
+            Count counter = 0;
+            auto pool = Instance.mSizePoolChain[size];
+            while (pool) {
+               if (pool->mStep > with.mStep) {
+                  Logger::Info(Logger::Purple, "Size ", (1 << size), " pool: ");
+                  DumpPool(counter, pool);
+               }
+               pool = pool->mNext;
+               ++counter;
+            }
+         }
+
+         // Dump every type pool chain                                  
+         for (auto type : Instance.mInstantiatedTypes) {
+            auto pool = type->GetPool<Pool>();
+            if (not pool)
+               continue;
+
+            Count counter = 0;
+            while (pool) {
+               if (pool->mStep > with.mStep) {
+                  Logger::Info(Logger::Purple, "Type ", type->mCppName, " pool: ");
+                  #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+                     Logger::Info(Logger::Purple, "(Boundary: ", type->mLibraryName, ")");
+                  #endif
+                  DumpPool(counter, pool);
+               }
+               pool = pool->mNext;
+               ++counter;
+            }
+         }
+      }
+
+      if (Instance.mStatistics.mEntries != with.mEntries) {
+         const auto scope = Logger::Info(Logger::Purple, "Entries difference: ",
+            int(Instance.mStatistics.mEntries) - int(with.mEntries),
+            Logger::Tabs {});
+      }
+
+      if (Instance.mStatistics.mTraitDefinitions != with.mTraitDefinitions) {
+         const auto scope = Logger::Info(Logger::Purple, "Trait definitions difference: ",
+            int(Instance.mStatistics.mTraitDefinitions) - int(with.mTraitDefinitions),
+            Logger::Tabs {});
+      }
+
+      if (Instance.mStatistics.mVerbDefinitions != with.mVerbDefinitions) {
+         const auto scope = Logger::Info(Logger::Purple, "Verb definitions difference: ",
+            int(Instance.mStatistics.mVerbDefinitions) - int(with.mVerbDefinitions),
+            Logger::Tabs {});
+      }
+
+      Logger::Info("------------------     MANAGED MEMORY DIFF END    ------------------");
    }
 
    /// Account for a newly allocated pool                                     
