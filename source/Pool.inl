@@ -337,7 +337,7 @@ namespace Langulus::Fractalloc
 
       auto prev = mLastFreed;
       do {
-         entry = AllocationFromIndex(ecounter - 1);
+         entry = AllocationFromIndex(ecounter ? ecounter - 1 : 0);
          if (entry->mReferences)
             continue;
 
