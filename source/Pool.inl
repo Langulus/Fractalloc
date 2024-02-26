@@ -168,12 +168,8 @@ namespace Langulus::Fractalloc
       }
 
       // Always adapt min threshold if bigger entry is introduced       
-      if (bytesWithPadding > mThresholdMin) {
+      if (bytesWithPadding > mThresholdMin)
          mThresholdMin = Roof2(bytesWithPadding);
-         //TODO everytime min threshold changes, 
-         // part of the freed entry chain may get invalid?
-         // traverse and stitch here?
-      }
 
       LANGULUS_ASSUME(DevAssumes,
          mAllocatedByFrontend + bytesWithPadding >= mAllocatedByFrontend,
@@ -234,12 +230,8 @@ namespace Langulus::Fractalloc
          if (newtotal > mThreshold)
             return false;
 
-         if (newtotal > mThresholdMin) {
+         if (newtotal > mThresholdMin)
             mThresholdMin = Roof2(newtotal);
-            //TODO everytime min threshold changes, 
-            // part of the freed entry chain may get invalid?
-            // traverse abd stitch here?
-         }
 
          mAllocatedByFrontend.mSize += addition;
       }
@@ -301,6 +293,60 @@ namespace Langulus::Fractalloc
          (void) touch;
          it += 4096;
       }
+   }
+   
+   /// Remove all empty entries at the end and increase threshold as much     
+   /// as possible                                                            
+   LANGULUS(INLINED)
+   void Pool::Trim() {
+      LANGULUS_ASSUME(DevAssumes, mEntries, "Should have at least one entry");
+
+      const Allocation* entry;
+      Count ecounter = mEntries;
+      do {
+         entry = AllocationFromIndex(ecounter - 1); //TODO could be optimized further
+         if (entry->mReferences)
+            break;
+      }
+      while (--ecounter > 0);
+
+      mEntries = ecounter;
+      mThreshold = ThresholdFromIndex(mEntries - 1);
+      mThresholdPrevious = mThreshold != mAllocatedByBackend
+         ? Size(mThreshold * 2) : mThreshold;
+      mNextEntry = const_cast<Byte*>(reinterpret_cast<const Byte*>(entry))
+         + mThresholdPrevious;
+
+      if (mNextEntry >= mMemoryEnd) {
+         // Reset carriage and shift level when it goes beyond          
+         mThresholdPrevious = mThreshold;
+         mThreshold.mSize >>= size_t(1);
+         mNextEntry = mMemory + mThreshold;
+      }
+
+      // Scan all unused entries up to mEntries and chain them          
+      mLastFreed = nullptr;
+      ecounter = 0;
+      do {
+         entry = AllocationFromIndex(ecounter);
+         if (not entry->mReferences) {
+            mLastFreed = const_cast<Allocation*>(entry);
+            break;
+         }
+      } while (++ecounter < mEntries - 1);
+
+      auto prev = mLastFreed;
+      do {
+         entry = AllocationFromIndex(ecounter - 1);
+         if (entry->mReferences)
+            continue;
+
+         prev->mNextFreeEntry = const_cast<Allocation*>(entry);
+         prev = prev->mNextFreeEntry;
+      } while (++ecounter < mEntries - 1);
+
+      if (prev)
+         prev->mNextFreeEntry = nullptr;
    }
 
    /// Get threshold associated with an index                                 

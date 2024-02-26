@@ -93,6 +93,7 @@ namespace Langulus::Fractalloc
       void FreePoolChain();
       void Null();
       void Touch();
+      void Trim();
 
       NOD() Size ThresholdFromIndex(Offset) const noexcept;
       NOD() const Allocation* AllocationFromIndex(Offset) const noexcept;

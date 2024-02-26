@@ -214,8 +214,10 @@ namespace Langulus::Fractalloc
    ///   @param chainStart - [in/out] the start of the chain                  
    void Allocator::CollectGarbageChain(Pool*& chainStart) {
       while (chainStart) {
-         if (chainStart->IsInUse())
+         if (chainStart->IsInUse()) {
+            chainStart->Trim();
             break;
+         }
 
          #if LANGULUS_FEATURE(MEMORY_STATISTICS)
             mStatistics.DelPool(chainStart);
@@ -233,6 +235,7 @@ namespace Langulus::Fractalloc
       auto pool = chainStart->mNext;
       while (pool) {
          if (pool->IsInUse()) {
+            pool->Trim();
             prev = pool;
             pool = pool->mNext;
             continue;
@@ -631,10 +634,19 @@ namespace Langulus::Fractalloc
             Logger::Push, Logger::Green, pool->mEntries, Logger::Pop, Logger::Tabs {}
          );
 
-         Count ecounter {};
+         Count consecutiveEmpties = 0;
+         Count ecounter = 0;
          do {
             const auto entry = pool->AllocationFromIndex(ecounter);
             if (entry->mReferences) {
+               if (consecutiveEmpties) {
+                  if (consecutiveEmpties == 1)
+                     Logger::Info(ecounter-1, "] ", Logger::Red, "unused entry");
+                  else
+                     Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ", Logger::Red, consecutiveEmpties, " unused entries");
+                  consecutiveEmpties = 0;
+               }
+
                Logger::Info(ecounter, "] ", Logger::Green, entry->mAllocatedBytes, " bytes, ");
                Logger::Append(entry->mReferences, " references: `");
                auto raw = entry->GetBlockStart();
@@ -650,9 +662,17 @@ namespace Langulus::Fractalloc
                else
                   Logger::Append('`');
             }
-            else Logger::Info(ecounter, "] ", Logger::Red, "unused entry");
+            else ++consecutiveEmpties;
          }
          while (++ecounter < pool->mEntries);
+
+         if (consecutiveEmpties) {
+            if (consecutiveEmpties == 1)
+               Logger::Info(ecounter-1, "] ", Logger::Red, "unused entry");
+            else
+               Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ", Logger::Red, consecutiveEmpties, " unused entries");
+            consecutiveEmpties = 0;
+         }
       }
    }
 
