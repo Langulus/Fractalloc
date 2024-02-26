@@ -112,7 +112,7 @@ namespace Langulus::Fractalloc
             auto& relevantPool = hint->GetPool<Pool>();
             pool->mNext = relevantPool;
             relevantPool = pool;
-            Instance.mInstantiatedTypes.insert(hint);
+            Instance.mInstantiatedTypes.insert(&*hint);
             break;
          }
          case RTTI::PoolTactic::Default:
