@@ -90,7 +90,8 @@ namespace Langulus::Fractalloc
 
       // A set of types, that are currently in use                      
       // Used to detect if a shared object is safe to be unloaded       
-      ::std::unordered_set<DMeta> mInstantiatedTypes;
+      // MUST BE BY POINTER, because there can be multiple definitions  
+      ::std::unordered_set<const RTTI::MetaData*> mInstantiatedTypes;
 
    private:
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
