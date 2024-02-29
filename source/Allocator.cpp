@@ -27,7 +27,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of client bytes to allocate                 
    ///   @return a newly allocated memory that is correctly aligned           
    template<AllocationPrimitive T>
-   T* AlignedAllocate(DMeta hint, Size size) IF_UNSAFE(noexcept) {
+   T* AlignedAllocate(DMeta hint, Offset size) IF_UNSAFE(noexcept) {
       const auto finalSize = T::GetNewAllocationSize(size) + Alignment;
       const auto base = ::std::malloc(finalSize);
       if (not base)
@@ -54,7 +54,7 @@ namespace Langulus::Fractalloc
    ///   @param hint - optional meta data to associate pool with              
    ///   @param size - the number of bytes to allocate                        
    ///   @return the allocation, or nullptr if out of memory                  
-   Allocation* Allocator::Allocate(RTTI::DMeta hint, Size size) IF_UNSAFE(noexcept) {
+   Allocation* Allocator::Allocate(RTTI::DMeta hint, Offset size) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, size, "Zero allocation is not allowed");
 
       // Decide pool chain, based on hint                               
@@ -82,7 +82,7 @@ namespace Langulus::Fractalloc
             #if LANGULUS_FEATURE(MEMORY_STATISTICS)
                auto& stats = Instance.mStatistics;
                stats.mEntries += 1;
-               stats.mBytesAllocatedByFrontend.mSize += memory->GetTotalSize();
+               stats.mBytesAllocatedByFrontend += memory->GetTotalSize();
             #endif
             return memory;
          }
@@ -142,7 +142,8 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of bytes to allocate                        
    ///   @param previous - the previous memory entry                          
    ///   @return the reallocated memory entry, or nullptr if out of memory    
-   Allocation* Allocator::Reallocate(Size size, Allocation* previous) IF_UNSAFE(noexcept) {
+   Allocation* Allocator::Reallocate(Offset size, Allocation* previous)
+   IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, previous,
          "Reallocating nullptr");
       LANGULUS_ASSUME(DevAssumes, size != previous->GetAllocatedSize(),
@@ -160,8 +161,8 @@ namespace Langulus::Fractalloc
       if (previous->mPool->Reallocate(previous, size)) {
          #if LANGULUS_FEATURE(MEMORY_STATISTICS)
             auto& stats = Instance.mStatistics;
-            stats.mBytesAllocatedByFrontend.mSize -= oldSize;
-            stats.mBytesAllocatedByFrontend.mSize += previous->GetTotalSize();
+            stats.mBytesAllocatedByFrontend -= oldSize;
+            stats.mBytesAllocatedByFrontend += previous->GetTotalSize();
          #endif
          return previous;
       }
@@ -186,7 +187,7 @@ namespace Langulus::Fractalloc
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
          auto& stats = Instance.mStatistics;
-         stats.mBytesAllocatedByFrontend.mSize -= entry->GetTotalSize();
+         stats.mBytesAllocatedByFrontend -= entry->GetTotalSize();
          stats.mEntries -= 1;
       #endif
 
@@ -198,9 +199,8 @@ namespace Langulus::Fractalloc
    ///   @param hint - optional meta data to associate pool with              
    ///   @param size - size of the pool (in bytes)                            
    ///   @return a pointer to the new pool                                    
-   Pool* Allocator::AllocatePool(DMeta hint, Size size) IF_UNSAFE(noexcept) {
-      const auto poolSize = ::std::max(
-         Pool::DefaultPoolSize.mSize, Roof2(size.mSize));
+   Pool* Allocator::AllocatePool(DMeta hint, Offset size) IF_UNSAFE(noexcept) {
+      const auto poolSize = ::std::max(Pool::DefaultPoolSize, Roof2(size));
       return AlignedAllocate<Pool>(hint, poolSize);
    }
 
@@ -612,16 +612,16 @@ namespace Langulus::Fractalloc
          fmt::format("{:x}", reinterpret_cast<Pointer>(pool)), Logger::Tabs {});
 
       Logger::Info("In use/reserved: ", 
-         Logger::Push, Logger::Green, pool->mAllocatedByFrontend, Logger::Pop,
+         Logger::Push, Logger::Green, Size {pool->mAllocatedByFrontend}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, pool->mAllocatedByBackend, Logger::Pop);
+         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop);
 
       Logger::Info("Min/Current/Max threshold: ", 
-         Logger::Push, Logger::Green, pool->mThresholdMin, Logger::Pop,
+         Logger::Push, Logger::Green, Size {pool->mThresholdMin}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Yellow, pool->mThreshold, Logger::Pop,
+         Logger::Push, Logger::Yellow, Size {pool->mThreshold}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, pool->mAllocatedByBackend, Logger::Pop);
+         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop);
 
       if (pool->mMeta) {
          Logger::Info("Associated type: `",
@@ -647,11 +647,11 @@ namespace Langulus::Fractalloc
                   consecutiveEmpties = 0;
                }
 
-               Logger::Info(ecounter, "] ", Logger::Green, entry->mAllocatedBytes, ", ");
+               Logger::Info(ecounter, "] ", Logger::Green, Size {entry->mAllocatedBytes}, ", ");
                Logger::Append(entry->mReferences, " references: `");
 
                auto raw = entry->GetBlockStart();
-               for (Offset i = 0; i < ::std::min(Size {32}, entry->mAllocatedBytes); ++i) {
+               for (Offset i = 0; i < ::std::min(Offset {32}, entry->mAllocatedBytes); ++i) {
                   if (::isprint(raw[i].mValue))
                      Logger::Append(static_cast<char>(raw[i].mValue));
                   else
@@ -697,12 +697,12 @@ namespace Langulus::Fractalloc
       }
 
       // Dump every size pool chain                                     
-      for (Offset size = 0; size < sizeof(Size) * 8; ++size) {
+      for (Offset size = 0; size < sizeof(Offset) * 8; ++size) {
          if (not Instance.mSizePoolChain[size])
             continue;
 
          const auto scope = Logger::Info(Logger::Purple, 
-            "SIZE POOL CHAIN FOR ", Logger::Red, (1 << size),
+            "SIZE POOL CHAIN FOR ", Logger::Red, Size {1 << size},
             Logger::Purple, ": ", Logger::Tabs {});
 
          Count counter = 0;
@@ -789,7 +789,7 @@ namespace Langulus::Fractalloc
          }
 
          // Dump every size pool chain                                  
-         for (Offset size = 0; size < sizeof(Size) * 8; ++size) {
+         for (Offset size = 0; size < sizeof(Offset) * 8; ++size) {
             if (not Instance.mSizePoolChain[size])
                continue;
 
@@ -797,7 +797,7 @@ namespace Langulus::Fractalloc
             auto pool = Instance.mSizePoolChain[size];
             while (pool) {
                if (pool->mStep > with.mStep) {
-                  Logger::Info(Logger::Purple, "Size ", (1 << size), " pool: ");
+                  Logger::Info(Logger::Purple, "Size ", Size {1 << size}, " pool: ");
                   DumpPool(counter, pool);
                }
                pool = pool->mNext;
@@ -853,8 +853,8 @@ namespace Langulus::Fractalloc
    /// Account for a newly allocated pool                                     
    ///   @param pool - the pool to account for                                
    void Allocator::Statistics::AddPool(const Pool* pool) noexcept {
-      mBytesAllocatedByBackend.mSize += pool->GetTotalSize();
-      mBytesAllocatedByFrontend.mSize += pool->GetAllocatedByFrontend();
+      mBytesAllocatedByBackend += pool->GetTotalSize();
+      mBytesAllocatedByFrontend += pool->GetAllocatedByFrontend();
       ++mPools;
       ++mEntries;
    }
@@ -862,7 +862,7 @@ namespace Langulus::Fractalloc
    /// Account for a removed pool                                             
    ///   @param pool - the pool to account for                                
    void Allocator::Statistics::DelPool(const Pool* pool) noexcept {
-      mBytesAllocatedByBackend.mSize -= pool->GetTotalSize();
+      mBytesAllocatedByBackend -= pool->GetTotalSize();
       --mPools;
    }
 
