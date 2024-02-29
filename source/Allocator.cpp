@@ -80,8 +80,9 @@ namespace Langulus::Fractalloc
          memory = pool->Allocate(size);
          if (memory) {
             #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-               Instance.mStatistics.mEntries += 1;
-               Instance.mStatistics.mBytesAllocatedByFrontend.mSize += memory->GetTotalSize();
+               auto& stats = Instance.mStatistics;
+               stats.mEntries += 1;
+               stats.mBytesAllocatedByFrontend.mSize += memory->GetTotalSize();
             #endif
             return memory;
          }
@@ -158,8 +159,9 @@ namespace Langulus::Fractalloc
       // New size is bigger, precautions must be taken                  
       if (previous->mPool->Reallocate(previous, size)) {
          #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-            Instance.mStatistics.mBytesAllocatedByFrontend.mSize -= oldSize;
-            Instance.mStatistics.mBytesAllocatedByFrontend.mSize += previous->GetTotalSize();
+            auto& stats = Instance.mStatistics;
+            stats.mBytesAllocatedByFrontend.mSize -= oldSize;
+            stats.mBytesAllocatedByFrontend.mSize += previous->GetTotalSize();
          #endif
          return previous;
       }
@@ -183,8 +185,9 @@ namespace Langulus::Fractalloc
          "Deallocating an allocation used from multiple places");
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-         Instance.mStatistics.mBytesAllocatedByFrontend.mSize -= entry->GetTotalSize();
-         Instance.mStatistics.mEntries -= 1;
+         auto& stats = Instance.mStatistics;
+         stats.mBytesAllocatedByFrontend.mSize -= entry->GetTotalSize();
+         stats.mEntries -= 1;
       #endif
 
       entry->mPool->Deallocate(entry);
@@ -196,7 +199,8 @@ namespace Langulus::Fractalloc
    ///   @param size - size of the pool (in bytes)                            
    ///   @return a pointer to the new pool                                    
    Pool* Allocator::AllocatePool(DMeta hint, Size size) IF_UNSAFE(noexcept) {
-      const auto poolSize = ::std::max(Pool::DefaultPoolSize, Roof2(size));
+      const auto poolSize = ::std::max(
+         Pool::DefaultPoolSize.mSize, Roof2(size.mSize));
       return AlignedAllocate<Pool>(hint, poolSize);
    }
 
@@ -264,15 +268,14 @@ namespace Langulus::Fractalloc
          Instance.CollectGarbageChain(sizeChain);
 
       // Cleanup all type chains                                        
-      for (auto typeChain =  Instance.mInstantiatedTypes.begin();
-                typeChain != Instance.mInstantiatedTypes.end();
-      ) {
+      auto& types = Instance.mInstantiatedTypes;
+      for (auto typeChain =  types.begin(); typeChain != types.end();) {
          auto& relevantPool = (*typeChain)->GetPool<Pool>();
          Instance.CollectGarbageChain(relevantPool);
 
          // Also discard the type if no pools remain                    
          if (not relevantPool)
-            typeChain = Instance.mInstantiatedTypes.erase(typeChain);
+            typeChain = types.erase(typeChain);
          else
             ++typeChain;
       }
@@ -285,7 +288,7 @@ namespace Langulus::Fractalloc
    ///   @param boundary - the boundary name                                  
    ///   @return the number of pools                                          
    Count Allocator::CheckBoundary(const Token& boundary) noexcept {
-      Count count {};
+      Count count = 0;
       for (auto type : Instance.mInstantiatedTypes) {
          if (type->mLibraryName == boundary) {
             auto pool = type->GetPool<Pool>();
@@ -608,25 +611,21 @@ namespace Langulus::Fractalloc
       const auto scope = Logger::Info(Logger::Cyan, "Pool #", id, " at ",
          fmt::format("{:x}", reinterpret_cast<Pointer>(pool)), Logger::Tabs {});
 
-      Logger::Info("Bytes in use/reserved: ", 
+      Logger::Info("In use/reserved: ", 
          Logger::Push, Logger::Green, pool->mAllocatedByFrontend, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, pool->mAllocatedByBackend, Logger::Pop,
-         " bytes"
-      );
+         Logger::Push, Logger::Red, pool->mAllocatedByBackend, Logger::Pop);
+
       Logger::Info("Min/Current/Max threshold: ", 
          Logger::Push, Logger::Green, pool->mThresholdMin, Logger::Pop,
          '/',
          Logger::Push, Logger::Yellow, pool->mThreshold, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, pool->mAllocatedByBackend, Logger::Pop,
-         " bytes"
-      );
+         Logger::Push, Logger::Red, pool->mAllocatedByBackend, Logger::Pop);
 
       if (pool->mMeta) {
          Logger::Info("Associated type: `",
-            pool->mMeta->mCppName, "`, of size ", pool->mMeta->mSize, " bytes"
-         );
+            pool->mMeta->mCppName, "`, of size ", pool->mMeta->mSize);
       }
 
       if (pool->mEntries) {
@@ -643,12 +642,14 @@ namespace Langulus::Fractalloc
                   if (consecutiveEmpties == 1)
                      Logger::Info(ecounter-1, "] ", Logger::Red, "unused entry");
                   else
-                     Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ", Logger::Red, consecutiveEmpties, " unused entries");
+                     Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ",
+                        Logger::Red, consecutiveEmpties, " unused entries");
                   consecutiveEmpties = 0;
                }
 
-               Logger::Info(ecounter, "] ", Logger::Green, entry->mAllocatedBytes, " bytes, ");
+               Logger::Info(ecounter, "] ", Logger::Green, entry->mAllocatedBytes, ", ");
                Logger::Append(entry->mReferences, " references: `");
+
                auto raw = entry->GetBlockStart();
                for (Offset i = 0; i < ::std::min(Size {32}, entry->mAllocatedBytes); ++i) {
                   if (::isprint(raw[i].mValue))
@@ -670,7 +671,8 @@ namespace Langulus::Fractalloc
             if (consecutiveEmpties == 1)
                Logger::Info(ecounter-1, "] ", Logger::Red, "unused entry");
             else
-               Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ", Logger::Red, consecutiveEmpties, " unused entries");
+               Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ",
+                  Logger::Red, consecutiveEmpties, " unused entries");
             consecutiveEmpties = 0;
          }
       }
@@ -684,7 +686,8 @@ namespace Langulus::Fractalloc
       if (Instance.mDefaultPoolChain) {
          const auto scope = Logger::Info(Logger::Purple,
             "DEFAULT POOL CHAIN: ", Logger::Tabs {});
-         Count counter {};
+
+         Count counter = 0;
          auto pool = Instance.mDefaultPoolChain;
          while (pool) {
             DumpPool(counter, pool);
@@ -701,7 +704,8 @@ namespace Langulus::Fractalloc
          const auto scope = Logger::Info(Logger::Purple, 
             "SIZE POOL CHAIN FOR ", Logger::Red, (1 << size),
             Logger::Purple, ": ", Logger::Tabs {});
-         Count counter {};
+
+         Count counter = 0;
          auto pool = Instance.mSizePoolChain[size];
          while (pool) {
             DumpPool(counter, pool);
@@ -741,26 +745,33 @@ namespace Langulus::Fractalloc
    /// Compare two statistics snapshots, and find the difference              
    void Allocator::Diff(const Statistics& with) noexcept {
       Logger::Info("------------------    MANAGED MEMORY DIFF START   ------------------");
+      auto& stats = Instance.mStatistics;
 
-      if (Instance.mStatistics.mBytesAllocatedByBackend != with.mBytesAllocatedByBackend) {
-         Logger::Info(Logger::Purple, "Allocated byte difference: ",
-            int(Instance.mStatistics.mBytesAllocatedByBackend) - int(with.mBytesAllocatedByBackend));
+      if (stats.mBytesAllocatedByBackend != with.mBytesAllocatedByBackend) {
+         Logger::Info(Logger::Purple,
+            "Allocated byte difference: ",
+            int(stats.mBytesAllocatedByBackend)
+            - int(with.mBytesAllocatedByBackend));
       }
 
-      if (Instance.mStatistics.mBytesAllocatedByFrontend != with.mBytesAllocatedByFrontend) {
-         Logger::Info(Logger::Purple, "Used byte difference: ",
-            int(Instance.mStatistics.mBytesAllocatedByFrontend) - int(with.mBytesAllocatedByFrontend));
+      if (stats.mBytesAllocatedByFrontend != with.mBytesAllocatedByFrontend) {
+         Logger::Info(Logger::Purple,
+            "Used byte difference: ",
+            int(stats.mBytesAllocatedByFrontend)
+            - int(with.mBytesAllocatedByFrontend));
       }
 
-      if (Instance.mStatistics.mDataDefinitions != with.mDataDefinitions) {
-         const auto scope = Logger::Info(Logger::Purple, "Data definitions difference: ",
-            int(Instance.mStatistics.mDataDefinitions) - int(with.mDataDefinitions),
-            Logger::Tabs {});
+      if (stats.mDataDefinitions != with.mDataDefinitions) {
+         const auto scope = Logger::Info(Logger::Purple,
+            "Data definitions difference: ",
+            int(stats.mDataDefinitions)
+            - int(with.mDataDefinitions), Logger::Tabs {});
       }
 
-      if (Instance.mStatistics.mPools != with.mPools) {
-         const auto scope = Logger::Info(Logger::Purple, "Pool difference: ",
-            int(Instance.mStatistics.mPools) - int(with.mPools),
+      if (stats.mPools != with.mPools) {
+         const auto scope = Logger::Info(Logger::Purple,
+            "Pool difference: ",
+            int(stats.mPools) - int(with.mPools),
             Logger::Tabs {});
 
          // Diff default pool chain                                     
@@ -815,21 +826,24 @@ namespace Langulus::Fractalloc
          }
       }
 
-      if (Instance.mStatistics.mEntries != with.mEntries) {
-         const auto scope = Logger::Info(Logger::Purple, "Entries difference: ",
-            int(Instance.mStatistics.mEntries) - int(with.mEntries),
+      if (stats.mEntries != with.mEntries) {
+         const auto scope = Logger::Info(Logger::Purple,
+            "Entries difference: ",
+            int(stats.mEntries) - int(with.mEntries),
             Logger::Tabs {});
       }
 
-      if (Instance.mStatistics.mTraitDefinitions != with.mTraitDefinitions) {
-         const auto scope = Logger::Info(Logger::Purple, "Trait definitions difference: ",
-            int(Instance.mStatistics.mTraitDefinitions) - int(with.mTraitDefinitions),
+      if (stats.mTraitDefinitions != with.mTraitDefinitions) {
+         const auto scope = Logger::Info(Logger::Purple,
+            "Trait definitions difference: ",
+            int(stats.mTraitDefinitions) - int(with.mTraitDefinitions),
             Logger::Tabs {});
       }
 
-      if (Instance.mStatistics.mVerbDefinitions != with.mVerbDefinitions) {
-         const auto scope = Logger::Info(Logger::Purple, "Verb definitions difference: ",
-            int(Instance.mStatistics.mVerbDefinitions) - int(with.mVerbDefinitions),
+      if (stats.mVerbDefinitions != with.mVerbDefinitions) {
+         const auto scope = Logger::Info(Logger::Purple,
+            "Verb definitions difference: ",
+            int(stats.mVerbDefinitions) - int(with.mVerbDefinitions),
             Logger::Tabs {});
       }
 
