@@ -29,7 +29,7 @@ namespace Langulus::Fractalloc
       , mAllocatedByBackendLSB  {Inner::LSB(size >> Size{1})}
       , mThreshold {size}
       , mThresholdPrevious {size}
-      , mThresholdMin {Roof2cexpr(meta 
+      , mThresholdMin {Roof2(meta 
          ? meta->mAllocationPage.mSize
          : Allocation::GetMinAllocation().mSize)}
       , mMeta {meta}
