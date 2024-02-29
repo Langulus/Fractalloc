@@ -69,7 +69,7 @@ SCENARIO("Testing CountLeadingZeroes calls", "[allocator]") {
 
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Offset); ++i) {
       REQUIRE(CountLeadingZeroes(numbers[i]) == static_cast<int>(results[i]));
    }
 }
@@ -91,7 +91,7 @@ SCENARIO("Testing CountTrailingZeroes calls", "[allocator]") {
 
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Offset); ++i) {
       REQUIRE(CountTrailingZeroes(numbers[i]) == static_cast<int>(results[i]));
    }
 }
@@ -151,15 +151,15 @@ TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]",
 }
 
 SCENARIO("Testing FastLog2 calls", "[allocator]") {
-   const Size numbers[] {
+   const Offset numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
    };
-   const Size results[] {
+   const Offset results[] {
       0, 0, 1, 1, 2, 2, 2,  3,  4,  6,  6,   6,   7
    };
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Size); ++i) {
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Offset); ++i) {
       REQUIRE(Fractalloc::Inner::FastLog2(numbers[i]) == results[i]);
    }
 }
@@ -167,7 +167,7 @@ SCENARIO("Testing FastLog2 calls", "[allocator]") {
 TEMPLATE_TEST_CASE("Testing GetAllocationPageOf<T> calls", "[allocator]",
    Type1, Type2, Type4, Type8, TypeBig, TypeVeryBig
 ) {
-   static_assert(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>().mSize));
+   static_assert(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>()));
    static_assert(RTTI::GetAllocationPageOf<TestType>() >= sizeof(TestType));
 }
 
@@ -186,8 +186,8 @@ SCENARIO("Testing pool functions", "[allocator]") {
          const auto half = full / 2;
          const auto quarter = half / 2;
 
-         REQUIRE(IsPowerOfTwo(pool->GetAllocatedByBackend().mSize));
-         REQUIRE(IsPowerOfTwo(pool->GetMinAllocation().mSize));
+         REQUIRE(IsPowerOfTwo(pool->GetAllocatedByBackend()));
+         REQUIRE(IsPowerOfTwo(pool->GetMinAllocation()));
          REQUIRE(IsPowerOfTwo(pool->GetMaxEntries()));
          REQUIRE(IsAligned(pool->GetPoolStart()));
          REQUIRE(pool->GetAllocatedByBackend() <= Pool::DefaultPoolSize*2);
@@ -451,7 +451,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
 
          REQUIRE(entry);
          REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
-         REQUIRE(pool->GetMinAllocation() == Roof2(entry->GetTotalSize().mSize));
+         REQUIRE(pool->GetMinAllocation() == Roof2(entry->GetTotalSize()));
          REQUIRE(pool->GetMaxEntries() == pool->GetAllocatedByBackend() / pool->GetMinAllocation());
          REQUIRE(pool->Contains(entry));
          REQUIRE(pool->IsInUse());
