@@ -18,7 +18,7 @@ namespace Langulus::Fractalloc
    
    template<class T>
    concept AllocationPrimitive = requires(T a) { 
-      {T::GetNewAllocationSize(Size {})} -> CT::Same<Size>;
+      {T::GetNewAllocationSize(0)} -> CT::Unsigned;
    };
 
 
@@ -32,7 +32,7 @@ namespace Langulus::Fractalloc
    friend struct Allocator;
    protected:
       // Allocated bytes for this chunk                                 
-      Size mAllocatedBytes;
+      Offset mAllocatedBytes;
       // The number of references to this memory                        
       Count mReferences;
       union {
@@ -57,17 +57,17 @@ namespace Langulus::Fractalloc
       Allocation(Allocation&&) = delete;
       ~Allocation() = delete;
 
-      constexpr Allocation(Size, Pool*) noexcept;
+      constexpr Allocation(Offset, Pool*) noexcept;
 
-      NOD() static constexpr Size GetSize() noexcept;
-      NOD() static constexpr Size GetNewAllocationSize(Size) noexcept;
-      NOD() static constexpr Size GetMinAllocation() noexcept;
+      NOD() static constexpr Offset GetSize() noexcept;
+      NOD() static constexpr Offset GetNewAllocationSize(Offset) noexcept;
+      NOD() static constexpr Offset GetMinAllocation() noexcept;
 
       NOD() constexpr Count GetUses() const noexcept;
       NOD() Byte* GetBlockStart() const noexcept;
-      NOD() const Byte* GetBlockEnd() const noexcept;
-      NOD() constexpr Size GetTotalSize() const noexcept;
-      NOD() constexpr Size GetAllocatedSize() const noexcept;
+      NOD() Byte const* GetBlockEnd() const noexcept;
+      NOD() constexpr Offset GetTotalSize() const noexcept;
+      NOD() constexpr Offset GetAllocatedSize() const noexcept;
       NOD() bool Contains(const void*) const noexcept;
       NOD() bool CollisionFree(const Allocation&) const noexcept;
 

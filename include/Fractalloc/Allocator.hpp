@@ -29,9 +29,9 @@ namespace Langulus::Fractalloc
          ///                                                                  
          struct Statistics {
             // The real allocated bytes, provided by malloc in backend  
-            Size mBytesAllocatedByBackend {};
+            Offset mBytesAllocatedByBackend {};
             // The bytes allocated by the frontend                      
-            Size mBytesAllocatedByFrontend {};
+            Offset mBytesAllocatedByFrontend {};
             // Number of registered entries                             
             Count mEntries {};
             // Number of registered pools                               
@@ -74,7 +74,7 @@ namespace Langulus::Fractalloc
       #else
          /// No state when MEMORY_STATISTICS feature is disabled              
          struct State {
-            constexpr bool Assert() const noexcept { return true; }
+            consteval bool Assert() const noexcept { return true; }
          };
       #endif
 
@@ -85,7 +85,7 @@ namespace Langulus::Fractalloc
       mutable const Pool* mLastFoundPool {};
 
       // Pool chains for types that use PoolTactic::Size                
-      static constexpr Count SizeBuckets = sizeof(Size) * 8;
+      static constexpr Count SizeBuckets = sizeof(Offset) * 8;
       Pool* mSizePoolChain[SizeBuckets] {};
 
       // A set of types, that are currently in use                      
@@ -107,10 +107,10 @@ namespace Langulus::Fractalloc
 
    public:
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Allocate(RTTI::DMeta, Size) IF_UNSAFE(noexcept);
+      static Allocation* Allocate(RTTI::DMeta, Offset) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Reallocate(Size, Allocation*) IF_UNSAFE(noexcept);
+      static Allocation* Reallocate(Offset, Allocation*) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
       static void Deallocate(Allocation*) IF_UNSAFE(noexcept);
@@ -122,7 +122,7 @@ namespace Langulus::Fractalloc
       static bool CheckAuthority(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(FRACTALLOC)
-      static Pool* AllocatePool(DMeta, Size) IF_UNSAFE(noexcept);
+      static Pool* AllocatePool(DMeta, Offset) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
       static void DeallocatePool(Pool*) IF_UNSAFE(noexcept);
