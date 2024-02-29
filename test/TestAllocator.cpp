@@ -96,7 +96,9 @@ SCENARIO("Testing CountTrailingZeroes calls", "[allocator]") {
    }
 }
 
-TEMPLATE_TEST_CASE("Testing IsPowerOfTwo calls", "[allocator]", uint8_t, uint16_t, uint32_t, uint64_t) {
+TEMPLATE_TEST_CASE("Testing IsPowerOfTwo calls", "[allocator]",
+   uint8_t, uint16_t, uint32_t, uint64_t
+) {
    using T = TestType;
    const T numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
@@ -111,7 +113,9 @@ TEMPLATE_TEST_CASE("Testing IsPowerOfTwo calls", "[allocator]", uint8_t, uint16_
    }
 }
 
-TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]", uint8_t, uint16_t, uint32_t, uint64_t) {
+TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]",
+   uint8_t, uint16_t, uint32_t, uint64_t
+) {
    using T = TestType;
    const T numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
@@ -125,11 +129,9 @@ TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]", uint8_t, uint16_t, uint
       for (unsigned i = 0; i < sizeof(numbers) / sizeof(T); ++i) {
          if (numbers[i] <= 128 || sizeof(T) > 1) {
             REQUIRE(Roof2<true>(numbers[i]) == results[i]);
-            REQUIRE(Roof2cexpr<true>(numbers[i]) == results[i]);
          }
          else {
             REQUIRE_THROWS_AS(Roof2<true>(numbers[i]), Except::Overflow);
-            REQUIRE_THROWS_AS(Roof2cexpr<true>(numbers[i]), Except::Overflow);
          }
       }
 
@@ -162,9 +164,11 @@ SCENARIO("Testing FastLog2 calls", "[allocator]") {
    }
 }
 
-TEMPLATE_TEST_CASE("Testing GetAllocationPageOf<T> calls", "[allocator]", Type1, Type2, Type4, Type8, TypeBig, TypeVeryBig) {
-   REQUIRE(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>().mSize));
-   REQUIRE(RTTI::GetAllocationPageOf<TestType>() >= sizeof(TestType));
+TEMPLATE_TEST_CASE("Testing GetAllocationPageOf<T> calls", "[allocator]",
+   Type1, Type2, Type4, Type8, TypeBig, TypeVeryBig
+) {
+   static_assert(IsPowerOfTwo(RTTI::GetAllocationPageOf<TestType>().mSize));
+   static_assert(RTTI::GetAllocationPageOf<TestType>() >= sizeof(TestType));
 }
 
 SCENARIO("Testing pool functions", "[allocator]") {
@@ -447,7 +451,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
 
          REQUIRE(entry);
          REQUIRE(pool->GetAllocatedByFrontend() == entry->GetTotalSize());
-         REQUIRE(pool->GetMinAllocation() == Roof2(entry->GetTotalSize()));
+         REQUIRE(pool->GetMinAllocation() == Roof2(entry->GetTotalSize().mSize));
          REQUIRE(pool->GetMaxEntries() == pool->GetAllocatedByBackend() / pool->GetMinAllocation());
          REQUIRE(pool->Contains(entry));
          REQUIRE(pool->IsInUse());
