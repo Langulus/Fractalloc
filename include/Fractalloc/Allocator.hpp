@@ -97,6 +97,9 @@ namespace Langulus::Fractalloc
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
          LANGULUS_API(FRACTALLOC)
          static void DumpPool(Offset, const Pool*) noexcept;
+         
+         NOD() LANGULUS_API(FRACTALLOC)
+         bool IntegrityCheckChain(const Pool*);
       #endif
 
       LANGULUS_API(FRACTALLOC)
@@ -144,6 +147,9 @@ namespace Langulus::Fractalloc
 
          LANGULUS_API(FRACTALLOC)
          static void Diff(const Statistics&) noexcept;
+         
+         LANGULUS_API(FRACTALLOC)
+         static bool IntegrityCheck();
       #endif
    };
 

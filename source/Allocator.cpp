@@ -280,7 +280,7 @@ namespace Langulus::Fractalloc
             ++typeChain;
       }
    }
-
+   
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    /// Check RTTI boundary for allocated pools                                
    /// Useful to decide when shared library is no longer used and is ready    
@@ -581,6 +581,11 @@ namespace Langulus::Fractalloc
    bool Allocator::State::Assert() {
       CollectGarbage();
 
+      if (not IntegrityCheck()) {
+         Logger::Error("Memory integrity check failure");
+         return false;
+      }
+
       if (mState.has_value()) {
          if (mState != GetStatistics()) {
             // Assertion failure                                        
@@ -865,7 +870,77 @@ namespace Langulus::Fractalloc
       mBytesAllocatedByBackend -= pool->GetTotalSize();
       --mPools;
    }
+   
+   /// Integrity check a pool chain                                           
+   ///   @param chainStart - [in/out] the start of the chain                  
+   ///   @return true if all checks passed                                    
+   bool Allocator::IntegrityCheckChain(const Pool* chainStart) {
+      while (chainStart) {
+         if (chainStart->IsInUse()) {
+            Count validAllocations = 0;
+            Count validBytes = 0;
+            for (Count i = 0; i < chainStart->mEntries; ++i) {
+               auto allocation = chainStart->AllocationFromIndex(i);
+               if (allocation->mReferences) {
+                  if (allocation->mReferences > 100000)
+                     Logger::Warning("Suspicious reference count");
 
+                  ++validAllocations;
+                  validBytes += allocation->GetTotalSize();
+               }
+            }
+
+            //TODO also check if negative memory space contains a predefined pattern,
+            // in order to detect writing outside boundaries
+
+            bool failure = false;
+            if (validAllocations != chainStart->mValidEntries) {
+               Logger::Error("Valid entry mismatch: found ",
+                  validAllocations, " entries, but ",
+                  chainStart->mValidEntries, " were actually registered"
+               );
+               failure = true;
+            }
+
+            if (validBytes != chainStart->mAllocatedByFrontend) {
+               Logger::Error("Valid byte usage mismatch: found ",
+                  validBytes, " bytes in use, but ",
+                  chainStart->mAllocatedByFrontend, " were actually registered"
+               );
+               failure = true;
+            }
+
+            if (failure)
+               return false;
+         }
+
+         chainStart = chainStart->mNext;
+      }
+
+      return true;
+   }
+   
+   /// Integrity checks                                                       
+   bool Allocator::IntegrityCheck() {
+      // Integrity check the default chain                              
+      if (not Instance.IntegrityCheckChain(Instance.mDefaultPoolChain))
+         return false;
+
+      // Integrity check all size chains                                
+      for (auto& sizeChain : Instance.mSizePoolChain) {
+         if (not Instance.IntegrityCheckChain(sizeChain))
+            return false;
+      }
+      
+      // Integrity check all type chains                                
+      for (auto& typeChain : Instance.mInstantiatedTypes) {
+         auto& relevantPool = typeChain->GetPool<Pool>();
+         if (not Instance.IntegrityCheckChain(relevantPool))
+            return false;
+      }
+
+      return true;
+   }
 #endif
 
 } // namespace Langulus::Fractalloc
