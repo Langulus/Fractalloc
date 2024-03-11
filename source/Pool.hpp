@@ -54,6 +54,7 @@ namespace Langulus::Fractalloc
    #if LANGULUS_FEATURE(MEMORY_STATISTICS)
       // Acts like a timestamp of when the allocation happened          
       Count mStep;
+      Count mValidEntries {};
    #endif
 
    public:

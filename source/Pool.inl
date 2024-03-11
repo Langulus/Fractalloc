@@ -146,14 +146,17 @@ namespace Langulus::Fractalloc
          newEntry = mLastFreed;
          mLastFreed = mLastFreed->mNextFreeEntry;
          new (newEntry) Allocation {
-            bytesWithPadding - Allocation::GetSize(), this};
+            bytesWithPadding - Allocation::GetSize(), this
+         };
       }
       else {
          // The entire pool is full (or empty), skip search for free    
          // spot, add a new allocation directly	instead                 
          newEntry = reinterpret_cast<Allocation*>(mNextEntry);
          new (newEntry) Allocation {
-            bytesWithPadding - Allocation::GetSize(), this};
+            bytesWithPadding - Allocation::GetSize(), this
+         };
+
          ++mEntries;
 
          // Move carriage to the next entry                             
@@ -175,6 +178,7 @@ namespace Langulus::Fractalloc
          mAllocatedByFrontend + bytesWithPadding >= mAllocatedByFrontend,
          "Frontend byte counter overflow");
       mAllocatedByFrontend += bytesWithPadding;
+      IF_LANGULUS_MEMORY_STATISTICS(++mValidEntries);
       return newEntry;
    }
 
@@ -200,6 +204,7 @@ namespace Langulus::Fractalloc
          mLastFreed = nullptr;
          mEntries = 0;
          mNextEntry = mMemory;
+         IF_LANGULUS_MEMORY_STATISTICS(mValidEntries = 0);
       }
       else {
          // Push the removed entry to the last freed list               
@@ -207,6 +212,7 @@ namespace Langulus::Fractalloc
          // pool pointer becomes a jump to the previous last freed      
          entry->mNextFreeEntry = mLastFreed;
          mLastFreed = entry;
+         IF_LANGULUS_MEMORY_STATISTICS(--mValidEntries);
 
          //TODO: keep track of size distrubution, 
          // shrink min threshold if all leading buckets go empty
@@ -304,25 +310,13 @@ namespace Langulus::Fractalloc
       const Allocation* entry;
       Count ecounter = mEntries;
       do {
-         entry = AllocationFromIndex(ecounter - 1); //TODO could be optimized further
+         entry = AllocationFromIndex(--ecounter); //TODO could be optimized further
          if (entry->mReferences)
             break;
       }
-      while (--ecounter > 0);
+      while (ecounter > 0);
 
-      mEntries = ecounter;
-      mThreshold = ThresholdFromIndex(mEntries - 1);
-      mThresholdPrevious = mThreshold != mAllocatedByBackend
-         ? Offset {mThreshold * 2} : mThreshold;
-      mNextEntry = const_cast<Byte*>(reinterpret_cast<const Byte*>(entry))
-         + mThresholdPrevious;
-
-      if (mNextEntry >= mMemoryEnd) {
-         // Reset carriage and shift level when it goes beyond          
-         mThresholdPrevious = mThreshold;
-         mThreshold >>= Offset {1};
-         mNextEntry = mMemory + mThreshold;
-      }
+      mEntries = ecounter + 1;
 
       // Scan all unused entries up to mEntries and chain them          
       mLastFreed = nullptr;
@@ -336,17 +330,24 @@ namespace Langulus::Fractalloc
       } while (++ecounter < mEntries - 1);
 
       auto prev = mLastFreed;
-      do {
-         entry = AllocationFromIndex(ecounter ? ecounter - 1 : 0);
+      while (++ecounter < mEntries - 1) {
+         entry = AllocationFromIndex(ecounter);
          if (entry->mReferences)
             continue;
 
          prev->mNextFreeEntry = const_cast<Allocation*>(entry);
          prev = prev->mNextFreeEntry;
-      } while (++ecounter < mEntries - 1);
+      }
 
       if (prev)
          prev->mNextFreeEntry = nullptr;
+
+      mThreshold = ThresholdFromIndex(mEntries - 1);
+      mThresholdPrevious = mThreshold != mAllocatedByBackend
+         ? Offset {mThreshold * 2} : mThreshold;
+      mNextEntry = const_cast<Byte*>(
+         reinterpret_cast<const Byte*>(AllocationFromIndex(mEntries))
+      );
    }
 
    /// Get threshold associated with an index                                 
