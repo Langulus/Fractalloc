@@ -570,9 +570,12 @@ namespace Langulus::Fractalloc
          and mBytesAllocatedByFrontend == rhs.mBytesAllocatedByFrontend
          and mEntries == rhs.mEntries
          and mPools == rhs.mPools
-         IF_LANGULUS_MANAGED_REFLECTION(and mDataDefinitions == rhs.mDataDefinitions)
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         and mDataDefinitions == rhs.mDataDefinitions
          and mTraitDefinitions == rhs.mTraitDefinitions
-         and mVerbDefinitions == rhs.mVerbDefinitions;
+         and mVerbDefinitions == rhs.mVerbDefinitions
+      #endif
+      ;
    }
 
    /// Check for memory leaks, by retrieving the new memory manager state     
@@ -840,6 +843,7 @@ namespace Langulus::Fractalloc
             Logger::Tabs {});
       }
 
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
       if (stats.mTraitDefinitions != with.mTraitDefinitions) {
          const auto scope = Logger::Info(Logger::Purple,
             "Trait definitions difference: ",
@@ -853,6 +857,7 @@ namespace Langulus::Fractalloc
             int(stats.mVerbDefinitions) - int(with.mVerbDefinitions),
             Logger::Tabs {});
       }
+   #endif
 
       Logger::Info("------------------     MANAGED MEMORY DIFF END    ------------------");
    }
