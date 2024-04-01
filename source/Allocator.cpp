@@ -570,7 +570,7 @@ namespace Langulus::Fractalloc
          and mBytesAllocatedByFrontend == rhs.mBytesAllocatedByFrontend
          and mEntries == rhs.mEntries
          and mPools == rhs.mPools
-         and mDataDefinitions == rhs.mDataDefinitions
+         IF_LANGULUS_MANAGED_REFLECTION(and mDataDefinitions == rhs.mDataDefinitions)
          and mTraitDefinitions == rhs.mTraitDefinitions
          and mVerbDefinitions == rhs.mVerbDefinitions;
    }
@@ -766,12 +766,14 @@ namespace Langulus::Fractalloc
             - int(with.mBytesAllocatedByFrontend));
       }
 
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
       if (stats.mDataDefinitions != with.mDataDefinitions) {
          const auto scope = Logger::Info(Logger::Purple,
             "Data definitions difference: ",
             int(stats.mDataDefinitions)
             - int(with.mDataDefinitions), Logger::Tabs {});
       }
+   #endif
 
       if (stats.mPools != with.mPools) {
          const auto scope = Logger::Info(Logger::Purple,
