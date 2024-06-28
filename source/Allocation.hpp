@@ -79,4 +79,4 @@ namespace Langulus::Fractalloc
       constexpr void Free(Count) noexcept;
    };
 
-} // namespace Langulus::Anyness
+} // namespace Langulus::Fractalloc

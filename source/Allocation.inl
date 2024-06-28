@@ -52,7 +52,7 @@ namespace Langulus::Fractalloc
          #endif
       }
 
-   } // namespace Langulus::Anyness::Inner
+   } // namespace Langulus::Fractalloc::Inner
 
 
    /// Initialize an allocation                                               
