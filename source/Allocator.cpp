@@ -615,20 +615,23 @@ namespace Langulus::Fractalloc
    ///   @param id - pool id                                                  
    ///   @param pool - the pool to dump                                       
    void Allocator::DumpPool(Offset id, const Pool* pool) noexcept {
-      const auto scope = Logger::Info(Logger::Cyan, "Pool #", id, " at ",
-         fmt::format("{:x}", reinterpret_cast<Pointer>(pool)), Logger::Tabs {});
+      const auto scope = Logger::InfoTab(Logger::Cyan, "Pool #", id, " at ",
+         fmt::format("{:x}", reinterpret_cast<Pointer>(pool))
+      );
 
       Logger::Info("In use/reserved: ", 
          Logger::Push, Logger::Green, Size {pool->mAllocatedByFrontend}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop);
+         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop
+      );
 
       Logger::Info("Min/Current/Max threshold: ", 
          Logger::Push, Logger::Green, Size {pool->mThresholdMin}, Logger::Pop,
          '/',
          Logger::Push, Logger::Yellow, Size {pool->mThreshold}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop);
+         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop
+      );
 
       if (pool->mMeta) {
          Logger::Info("Associated type: `",
@@ -636,8 +639,8 @@ namespace Langulus::Fractalloc
       }
 
       if (pool->mEntries) {
-         const auto escope = Logger::Info("Active entries: ",
-            Logger::Push, Logger::Green, pool->mEntries, Logger::Pop, Logger::Tabs {}
+         const auto escope = Logger::InfoTab("Active entries: ",
+            Logger::Push, Logger::Green, pool->mEntries, Logger::Pop
          );
 
          Count consecutiveEmpties = 0;
@@ -691,9 +694,7 @@ namespace Langulus::Fractalloc
 
       // Dump default pool chain                                        
       if (Instance.mDefaultPoolChain) {
-         const auto scope = Logger::Info(Logger::Purple,
-            "DEFAULT POOL CHAIN: ", Logger::Tabs {});
-
+         const auto scope = Logger::InfoTab(Logger::Purple, "DEFAULT POOL CHAIN: ");
          Count counter = 0;
          auto pool = Instance.mDefaultPoolChain;
          while (pool) {
@@ -708,9 +709,10 @@ namespace Langulus::Fractalloc
          if (not Instance.mSizePoolChain[size])
             continue;
 
-         const auto scope = Logger::Info(Logger::Purple, 
+         const auto scope = Logger::InfoTab(Logger::Purple, 
             "SIZE POOL CHAIN FOR ", Logger::Red, Size {1 << size},
-            Logger::Purple, ": ", Logger::Tabs {});
+            Logger::Purple, ": "
+         );
 
          Count counter = 0;
          auto pool = Instance.mSizePoolChain[size];
@@ -728,14 +730,16 @@ namespace Langulus::Fractalloc
             continue;
 
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            const auto scope = Logger::Info(Logger::Purple, 
+            const auto scope = Logger::InfoTab(Logger::Purple, 
                "TYPE POOL CHAIN FOR `", Logger::Red, type->mCppName, 
                Logger::Purple, "` (BOUNDARY: ", Logger::Red,
-               type->mLibraryName, Logger::Purple, "): ", Logger::Tabs {});
+               type->mLibraryName, Logger::Purple, "): "
+            );
          #else
-            const auto scope = Logger::Info(Logger::Purple, 
+            const auto scope = Logger::InfoTab(Logger::Purple, 
                "TYPE POOL CHAIN FOR `", Logger::Red, type->mCppName, 
-               Logger::Purple, '`', Logger::Tabs {});
+               Logger::Purple, '`'
+            );
          #endif
 
          Count counter = 0;
@@ -770,18 +774,17 @@ namespace Langulus::Fractalloc
 
    #if LANGULUS_FEATURE(MANAGED_REFLECTION)
       if (stats.mDataDefinitions != with.mDataDefinitions) {
-         const auto scope = Logger::Info(Logger::Purple,
+         const auto scope = Logger::InfoTab(Logger::Purple,
             "Data definitions difference: ",
-            int(stats.mDataDefinitions)
-            - int(with.mDataDefinitions), Logger::Tabs {});
+            int(stats.mDataDefinitions) - int(with.mDataDefinitions)
+         );
       }
    #endif
 
       if (stats.mPools != with.mPools) {
-         const auto scope = Logger::Info(Logger::Purple,
-            "Pool difference: ",
-            int(stats.mPools) - int(with.mPools),
-            Logger::Tabs {});
+         const auto scope = Logger::InfoTab(Logger::Purple,
+            "Pool difference: ", int(stats.mPools) - int(with.mPools)
+         );
 
          // Diff default pool chain                                     
          if (Instance.mDefaultPoolChain) {
@@ -836,25 +839,24 @@ namespace Langulus::Fractalloc
       }
 
       if (stats.mEntries != with.mEntries) {
-         const auto scope = Logger::Info(Logger::Purple,
-            "Entries difference: ",
-            int(stats.mEntries) - int(with.mEntries),
-            Logger::Tabs {});
+         const auto scope = Logger::InfoTab(Logger::Purple,
+            "Entries difference: ", int(stats.mEntries) - int(with.mEntries)
+         );
       }
 
    #if LANGULUS_FEATURE(MANAGED_REFLECTION)
       if (stats.mTraitDefinitions != with.mTraitDefinitions) {
-         const auto scope = Logger::Info(Logger::Purple,
+         const auto scope = Logger::InfoTab(Logger::Purple,
             "Trait definitions difference: ",
-            int(stats.mTraitDefinitions) - int(with.mTraitDefinitions),
-            Logger::Tabs {});
+            int(stats.mTraitDefinitions) - int(with.mTraitDefinitions)
+         );
       }
 
       if (stats.mVerbDefinitions != with.mVerbDefinitions) {
-         const auto scope = Logger::Info(Logger::Purple,
+         const auto scope = Logger::InfoTab(Logger::Purple,
             "Verb definitions difference: ",
-            int(stats.mVerbDefinitions) - int(with.mVerbDefinitions),
-            Logger::Tabs {});
+            int(stats.mVerbDefinitions) - int(with.mVerbDefinitions)
+         );
       }
    #endif
 
