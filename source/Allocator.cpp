@@ -620,17 +620,17 @@ namespace Langulus::Fractalloc
       );
 
       Logger::Info("In use/reserved: ", 
-         Logger::Push, Logger::Green, Size {pool->mAllocatedByFrontend}, Logger::Pop,
+         Logger::PushGreen, Size {pool->mAllocatedByFrontend}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop
+         Logger::PushRed, Size {pool->mAllocatedByBackend}, Logger::Pop
       );
 
       Logger::Info("Min/Current/Max threshold: ", 
-         Logger::Push, Logger::Green, Size {pool->mThresholdMin}, Logger::Pop,
+         Logger::PushGreen, Size {pool->mThresholdMin}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Yellow, Size {pool->mThreshold}, Logger::Pop,
+         Logger::PushYellow, Size {pool->mThreshold}, Logger::Pop,
          '/',
-         Logger::Push, Logger::Red, Size {pool->mAllocatedByBackend}, Logger::Pop
+         Logger::PushRed, Size {pool->mAllocatedByBackend}, Logger::Pop
       );
 
       if (pool->mMeta) {
@@ -640,7 +640,7 @@ namespace Langulus::Fractalloc
 
       if (pool->mEntries) {
          const auto escope = Logger::InfoTab("Active entries: ",
-            Logger::Push, Logger::Green, pool->mEntries, Logger::Pop
+            Logger::PushGreen, pool->mEntries, Logger::Pop
          );
 
          Count consecutiveEmpties = 0;
