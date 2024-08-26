@@ -615,17 +615,17 @@ namespace Langulus::Fractalloc
    ///   @param id - pool id                                                  
    ///   @param pool - the pool to dump                                       
    void Allocator::DumpPool(Offset id, const Pool* pool) noexcept {
-      const auto scope = Logger::InfoTab(Logger::Cyan, "Pool #", id, " at ",
+      const auto scope = Logger::Section(Logger::Cyan, "Pool #", id, " at ",
          fmt::format("{:x}", reinterpret_cast<Pointer>(pool))
       );
 
-      Logger::Info("In use/reserved: ", 
+      Logger::Line("In use/reserved: ", 
          Logger::PushGreen, Size {pool->mAllocatedByFrontend}, Logger::Pop,
          '/',
          Logger::PushRed, Size {pool->mAllocatedByBackend}, Logger::Pop
       );
 
-      Logger::Info("Min/Current/Max threshold: ", 
+      Logger::Line("Min/Current/Max threshold: ",
          Logger::PushGreen, Size {pool->mThresholdMin}, Logger::Pop,
          '/',
          Logger::PushYellow, Size {pool->mThreshold}, Logger::Pop,
@@ -634,12 +634,12 @@ namespace Langulus::Fractalloc
       );
 
       if (pool->mMeta) {
-         Logger::Info("Associated type: `",
+         Logger::Line("Associated type: `",
             pool->mMeta->mCppName, "`, of size ", pool->mMeta->mSize);
       }
 
       if (pool->mEntries) {
-         const auto escope = Logger::InfoTab("Active entries: ",
+         const auto escope = Logger::Section("Active entries: ",
             Logger::PushGreen, pool->mEntries, Logger::Pop
          );
 
@@ -650,14 +650,14 @@ namespace Langulus::Fractalloc
             if (entry->mReferences) {
                if (consecutiveEmpties) {
                   if (consecutiveEmpties == 1)
-                     Logger::Info(ecounter-1, "] ", Logger::Red, "unused entry");
+                     Logger::Line(ecounter-1, "] ", Logger::Red, "unused entry");
                   else
-                     Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ",
+                     Logger::Line(ecounter - consecutiveEmpties, '-', ecounter-1, "] ",
                         Logger::Red, consecutiveEmpties, " unused entries");
                   consecutiveEmpties = 0;
                }
 
-               Logger::Info(ecounter, "] ", Logger::Green, Size {entry->mAllocatedBytes}, ", ");
+               Logger::Line(ecounter, "] ", Logger::Green, Size {entry->mAllocatedBytes}, ", ");
                Logger::Append(entry->mReferences, " references: `");
 
                auto raw = entry->GetBlockStart();
@@ -679,9 +679,9 @@ namespace Langulus::Fractalloc
 
          if (consecutiveEmpties) {
             if (consecutiveEmpties == 1)
-               Logger::Info(ecounter-1, "] ", Logger::Red, "unused entry");
+               Logger::Line(ecounter-1, "] ", Logger::Red, "unused entry");
             else
-               Logger::Info(ecounter - consecutiveEmpties, '-', ecounter-1, "] ",
+               Logger::Line(ecounter - consecutiveEmpties, '-', ecounter-1, "] ",
                   Logger::Red, consecutiveEmpties, " unused entries");
             consecutiveEmpties = 0;
          }
@@ -690,7 +690,7 @@ namespace Langulus::Fractalloc
 
    /// Dump all currently allocated pools and entries, useful to locate leaks 
    void Allocator::DumpPools() noexcept {
-      Logger::Info("------------------ MANAGED MEMORY POOL DUMP START ------------------");
+      auto section = Logger::Section("MANAGED MEMORY POOL DUMP");
 
       // Dump default pool chain                                        
       if (Instance.mDefaultPoolChain) {
@@ -749,13 +749,11 @@ namespace Langulus::Fractalloc
             ++counter;
          }
       }
-
-      Logger::Info("------------------  MANAGED MEMORY POOL DUMP END  ------------------");
    }
 
    /// Compare two statistics snapshots, and find the difference              
    void Allocator::Diff(const Statistics& with) noexcept {
-      Logger::Info("------------------    MANAGED MEMORY DIFF START   ------------------");
+      auto section = Logger::Section("MANAGED MEMORY DIFF");
       auto& stats = Instance.mStatistics;
 
       if (stats.mBytesAllocatedByBackend != with.mBytesAllocatedByBackend) {
@@ -859,8 +857,6 @@ namespace Langulus::Fractalloc
          );
       }
    #endif
-
-      Logger::Info("------------------     MANAGED MEMORY DIFF END    ------------------");
    }
 
    /// Account for a newly allocated pool                                     
