@@ -35,7 +35,7 @@ namespace Langulus::Fractalloc
       , mHandle {memory} {
       mMemory = GetPoolStart<Byte>();
       mMemoryEnd = mMemory + mAllocatedByBackend;
-      mNextEntry = mMemory;
+      //mNextEntry = mMemory;
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
          mStep = Instance.GetStatistics().mStep;
@@ -136,7 +136,7 @@ namespace Langulus::Fractalloc
 
       // Check if we can add a new entry                                
       const auto bytesWithPadding = Allocation::GetNewAllocationSize(bytes);
-      if (not CanContain(bytesWithPadding)) UNLIKELY()
+      if (not CanContain(bytesWithPadding))
          return nullptr;
 
       Allocation* newEntry;
@@ -151,7 +151,7 @@ namespace Langulus::Fractalloc
       else {
          // The entire pool is full (or empty), skip search for free    
          // spot, add a new allocation directly	instead                 
-         newEntry = reinterpret_cast<Allocation*>(mNextEntry);
+         newEntry = const_cast<Allocation*>(AllocationFromIndex(mEntries)); //reinterpret_cast<Allocation*>(mNextEntry);
          new (newEntry) Allocation {
             bytesWithPadding - Allocation::GetSize(), this
          };
@@ -159,13 +159,17 @@ namespace Langulus::Fractalloc
          ++mEntries;
 
          // Move carriage to the next entry                             
-         mNextEntry += mThresholdPrevious;
+         //mNextEntry += mThresholdPrevious;
 
-         if (mNextEntry >= mMemoryEnd) UNLIKELY() {
+         if (reinterpret_cast<Byte*>(newEntry) + mThreshold >= mMemoryEnd) {
             // Reset carriage and shift level when it goes beyond       
             mThresholdPrevious = mThreshold;
             mThreshold >>= one;
-            mNextEntry = mMemory + mThreshold;
+            //mNextEntry = mMemory + mThreshold;
+            //mNextEntry = const_cast<Byte*>(reinterpret_cast<const Byte*>(AllocationFromIndex(mEntries)));
+
+            //if (const_cast<Byte*>(reinterpret_cast<const Byte*>(AllocationFromIndex(mEntries))) != mNextEntry)
+            //   Logger::Error("WRONG WRONG WRONG WRONG WRONG WRONG WRONG WRONG WRONG WRONG WRONG");
          }
       }
 
@@ -202,7 +206,7 @@ namespace Langulus::Fractalloc
          mThresholdMin = Allocation::GetMinAllocation();
          mLastFreed = nullptr;
          mEntries = 0;
-         mNextEntry = mMemory;
+         //mNextEntry = mMemory;
          IF_LANGULUS_MEMORY_STATISTICS(mValidEntries = 0);
       }
       else {
@@ -344,9 +348,9 @@ namespace Langulus::Fractalloc
       mThreshold = ThresholdFromIndex(mEntries - 1);
       mThresholdPrevious = mThreshold != mAllocatedByBackend
          ? Offset {mThreshold * 2} : mThreshold;
-      mNextEntry = const_cast<Byte*>(
+      /*mNextEntry = const_cast<Byte*>(
          reinterpret_cast<const Byte*>(AllocationFromIndex(mEntries))
-      );
+      );*/
    }
 
    /// Get threshold associated with an index                                 
