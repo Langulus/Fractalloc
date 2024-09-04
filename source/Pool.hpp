@@ -32,7 +32,7 @@ namespace Langulus::Fractalloc
       // A chain of freed entries in the range [0-mEntries)             
       Allocation* mLastFreed {};
       // The next usable entry (not allocated yet)                      
-      Byte* mNextEntry {};
+      //Byte* mNextEntry {};
       // Current threshold, that is, max size of a new entry            
       Offset mThreshold {};
       Offset mThresholdPrevious {};
