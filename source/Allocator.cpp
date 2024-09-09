@@ -10,6 +10,14 @@
 #include "Pool.inl"
 #include "Allocation.inl"
 
+#if 1
+   VERBOSE(...)      Logger::Info(__VA_ARGS__)
+   VERBOSE_TAB(...)  const auto tab = Logger::InfoTab(__VA_ARGS__)
+#else
+   VERBOSE(...)      LANGULUS(NOOP)
+   VERBOSE_TAB(...)  LANGULUS(NOOP)
+#endif
+
 
 namespace Langulus::Fractalloc
 {
