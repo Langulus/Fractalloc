@@ -656,6 +656,7 @@ namespace Langulus::Fractalloc
             Diff(mState.value());
             mState = GetStatistics();
             ++Instance.mStatistics.mStep;
+            Logger::Error("Memory state mismatch");
             return false;
          }
       }
