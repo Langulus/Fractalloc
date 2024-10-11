@@ -79,7 +79,7 @@ namespace Langulus::Fractalloc
 
    private:
       // Default pool chain                                             
-      Pool* mDefaultPoolChain {};
+      Pool* mMainPoolChain {};
       // The last succesfull Find() result in default pool chain        
       mutable const Pool* mLastFoundPool {};
 
