@@ -75,12 +75,12 @@ namespace Langulus::Fractalloc
          case RTTI::PoolTactic::Type:
             pool = hint->GetPool<Pool>();
             break;
-         case RTTI::PoolTactic::Default:
-            pool = Instance.mDefaultPoolChain;
+         case RTTI::PoolTactic::Main:
+            pool = Instance.mMainPoolChain;
             break;
          }
       }
-      else pool = Instance.mDefaultPoolChain;
+      else pool = Instance.mMainPoolChain;
 
       //	Attempt to place allocation in the default chain               
       Allocation* memory = nullptr;
@@ -105,7 +105,7 @@ namespace Langulus::Fractalloc
             case RTTI::PoolTactic::Type:
                VERBOSE("Type was: ", hint->mToken, " (type pool tactic)");
                break;
-            case RTTI::PoolTactic::Default:
+            case RTTI::PoolTactic::Main:
                VERBOSE("Type was: ", hint->mToken, " (default pool tactic)");
                break;
             }
@@ -155,17 +155,17 @@ namespace Langulus::Fractalloc
             Instance.mInstantiatedTypes.insert(&*hint);
             break;
          }
-         case RTTI::PoolTactic::Default:
-            VERBOSE("Type was: ", hint->mToken, " (default pool tactic)");
-            pool->mNext = Instance.mDefaultPoolChain;
-            Instance.mDefaultPoolChain = pool;
+         case RTTI::PoolTactic::Main:
+            VERBOSE("Type was: ", hint->mToken, " (main pool tactic)");
+            pool->mNext = Instance.mMainPoolChain;
+            Instance.mMainPoolChain = pool;
             break;
          }
       }
       else {
-         VERBOSE("Type was unknown (default pool tactic)");
-         pool->mNext = Instance.mDefaultPoolChain;
-         Instance.mDefaultPoolChain = pool;
+         VERBOSE("Type was unknown (main pool tactic)");
+         pool->mNext = Instance.mMainPoolChain;
+         Instance.mMainPoolChain = pool;
       }
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
@@ -320,8 +320,8 @@ namespace Langulus::Fractalloc
    void Allocator::CollectGarbage() {
       Instance.mLastFoundPool = nullptr;
 
-      // Cleanup the default chain                                      
-      Instance.CollectGarbageChain(Instance.mDefaultPoolChain);
+      // Cleanup the main chain                                         
+      Instance.CollectGarbageChain(Instance.mMainPoolChain);
 
       // Cleanup all size chains                                        
       for (auto& sizeChain : Instance.mSizePoolChain)
@@ -428,7 +428,7 @@ namespace Langulus::Fractalloc
 
             // Then check default pool chain                            
             // (pointer could be a member of default-pooled type)       
-            result = Instance.FindInChain(memory, Instance.mDefaultPoolChain);
+            result = Instance.FindInChain(memory, Instance.mMainPoolChain);
             if (result)
                return result;
 
@@ -462,7 +462,7 @@ namespace Langulus::Fractalloc
 
             // Then check default pool chain                            
             // (pointer could be a member of default-pooled type)       
-            result = Instance.FindInChain(memory, Instance.mDefaultPoolChain);
+            result = Instance.FindInChain(memory, Instance.mMainPoolChain);
             if (result)
                return result;
 
@@ -487,14 +487,14 @@ namespace Langulus::Fractalloc
 
          } return nullptr;
 
-         case RTTI::PoolTactic::Default:
+         case RTTI::PoolTactic::Main:
             break;
          }
       }
 
-      // If reached, either no hint is provided, or PoolTactic::Default 
-      //  Check default pool chain                                      
-      result = Instance.FindInChain(memory, Instance.mDefaultPoolChain);
+      // If reached, either no hint is provided, or PoolTactic::Main    
+      // Check main pool chain                                          
+      result = Instance.FindInChain(memory, Instance.mMainPoolChain);
       if (result)
          return result;
 
@@ -547,7 +547,7 @@ namespace Langulus::Fractalloc
 
             // Then check default pool chain                            
             // (pointer could be a member of default-pooled type)       
-            if (Instance.ContainedInChain(memory, Instance.mDefaultPoolChain))
+            if (Instance.ContainedInChain(memory, Instance.mMainPoolChain))
                return true;
 
             // Check all typed pool chains                              
@@ -576,7 +576,7 @@ namespace Langulus::Fractalloc
 
             // Then check default pool chain                            
             // (pointer could be a member of default-pooled type)       
-            if (Instance.ContainedInChain(memory, Instance.mDefaultPoolChain))
+            if (Instance.ContainedInChain(memory, Instance.mMainPoolChain))
                return true;
 
             // Check all size pool chains                               
@@ -597,14 +597,14 @@ namespace Langulus::Fractalloc
             }
             return false;
 
-         case RTTI::PoolTactic::Default:
+         case RTTI::PoolTactic::Main:
             break;
          }
       }
 
-      // If reached, either no hint is provided, or PoolTactic::Default 
-      //  Check default pool chain                                      
-      if (Instance.ContainedInChain(memory, Instance.mDefaultPoolChain))
+      // If reached, either no hint is provided, or PoolTactic::Main    
+      // Check main pool chain                                          
+      if (Instance.ContainedInChain(memory, Instance.mMainPoolChain))
          return true;
 
       // Check all size pool chains                                     
@@ -759,10 +759,10 @@ namespace Langulus::Fractalloc
       auto section = Logger::InfoTab("MANAGED MEMORY POOL DUMP");
 
       // Dump default pool chain                                        
-      if (Instance.mDefaultPoolChain) {
-         const auto scope = Logger::InfoTab(Logger::Purple, "DEFAULT POOL CHAIN: ");
+      if (Instance.mMainPoolChain) {
+         const auto scope = Logger::InfoTab(Logger::Purple, "MAIN POOL CHAIN: ");
          Count counter = 0;
-         auto pool = Instance.mDefaultPoolChain;
+         auto pool = Instance.mMainPoolChain;
          while (pool) {
             DumpPool(counter, pool);
             pool = pool->mNext;
@@ -851,9 +851,9 @@ namespace Langulus::Fractalloc
          );
 
          // Diff default pool chain                                     
-         if (Instance.mDefaultPoolChain) {
+         if (Instance.mMainPoolChain) {
             Count counter = 0;
-            auto pool = Instance.mDefaultPoolChain;
+            auto pool = Instance.mMainPoolChain;
             while (pool) {
                if (pool->mStep > with.mStep) {
                   Logger::Info(Logger::Purple, "Default pool: ");
@@ -993,8 +993,8 @@ namespace Langulus::Fractalloc
    /// Integrity checks                                                       
    bool Allocator::IntegrityCheck() {
       // Integrity check the default chain                              
-      Logger::Info("Integrity check: mDefaultPoolChain...");
-      if (not Instance.IntegrityCheckChain(Instance.mDefaultPoolChain))
+      Logger::Info("Integrity check: mMainPoolChain...");
+      if (not Instance.IntegrityCheckChain(Instance.mMainPoolChain))
          return false;
 
       // Integrity check all size chains                                
