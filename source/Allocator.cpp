@@ -993,24 +993,30 @@ namespace Langulus::Fractalloc
    /// Integrity checks                                                       
    bool Allocator::IntegrityCheck() {
       // Integrity check the default chain                              
-      Logger::Info("Integrity check: mMainPoolChain...");
-      if (not Instance.IntegrityCheckChain(Instance.mMainPoolChain))
-         return false;
+      if (mMainPoolChain) {
+         Logger::Info("Integrity check: mMainPoolChain...");
+         if (not Instance.IntegrityCheckChain(Instance.mMainPoolChain))
+            return false;
+      }
 
       // Integrity check all size chains                                
       int size = 1;
       for (auto& sizeChain : Instance.mSizePoolChain) {
-         Logger::Info("Integrity check: mSizePoolChain #", size++, "...");
-         if (not Instance.IntegrityCheckChain(sizeChain))
-            return false;
+         if (sizeChain) {
+            Logger::Info("Integrity check: mSizePoolChain #", size++, "...");
+            if (not Instance.IntegrityCheckChain(sizeChain))
+               return false;
+         }
       }
       
       // Integrity check all type chains                                
       for (auto& typeChain : Instance.mInstantiatedTypes) {
-         Logger::Info("Integrity check for type ", typeChain->mToken, "...");
          auto& relevantPool = typeChain->GetPool<Pool>();
-         if (not Instance.IntegrityCheckChain(relevantPool))
-            return false;
+         if (relevantPool) {
+            Logger::Info("Integrity check for type ", typeChain->mToken, "...");
+            if (not Instance.IntegrityCheckChain(relevantPool))
+               return false;
+         }
       }
 
       return true;
