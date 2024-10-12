@@ -993,7 +993,7 @@ namespace Langulus::Fractalloc
    /// Integrity checks                                                       
    bool Allocator::IntegrityCheck() {
       // Integrity check the default chain                              
-      if (mMainPoolChain) {
+      if (Instance.mMainPoolChain) {
          Logger::Info("Integrity check: mMainPoolChain...");
          if (not Instance.IntegrityCheckChain(Instance.mMainPoolChain))
             return false;
