@@ -10,8 +10,7 @@
 #include "Pool.inl"
 #include "Allocation.inl"
 
-#if 0
-   #include <Logger/Logger.hpp>
+#if 1
    #define VERBOSE(...)      Langulus::Logger::Info(__VA_ARGS__)
    #define VERBOSE_TAB(...)  const auto tab = Langulus::Logger::InfoTab(__VA_ARGS__)
 #else
@@ -942,18 +941,23 @@ namespace Langulus::Fractalloc
    }
    
    /// Integrity check a pool chain                                           
-   ///   @param chainStart - [in/out] the start of the chain                  
+   ///   @param pool - [in/out] the start of the chain                        
    ///   @return true if all checks passed                                    
-   bool Allocator::IntegrityCheckChain(const Pool* chainStart) {
-      while (chainStart) {
-         if (chainStart->IsInUse()) {
+   bool Allocator::IntegrityCheckChain(const Pool* pool) {
+      while (pool) {
+         if (pool->IsInUse()) {
             Count validAllocations = 0;
             Count validBytes = 0;
-            for (Count i = 0; i < chainStart->mEntries; ++i) {
-               auto allocation = chainStart->AllocationFromIndex(i);
+            for (Count i = 0; i < pool->mEntries; ++i) {
+               auto allocation = pool->AllocationFromIndex(i);
                if (allocation->mReferences) {
-                  if (allocation->mReferences > 100000)
-                     Logger::Warning("Suspicious reference count");
+                  if (allocation->mReferences > 100000) {
+                     Logger::Warning(
+                        "Fractalloc: Suspicious reference count in allocation ",
+                        Logger::Hex(allocation), " of size ", allocation->GetAllocatedSize(),
+                        " in pool ", Logger::Hex(pool)
+                     );
+                  }
 
                   ++validAllocations;
                   validBytes += allocation->GetTotalSize();
@@ -964,18 +968,20 @@ namespace Langulus::Fractalloc
             // in order to detect writing outside boundaries
 
             bool failure = false;
-            if (validAllocations != chainStart->mValidEntries) {
-               Logger::Error("Valid entry mismatch: found ",
+            if (validAllocations != pool->mValidEntries) {
+               Logger::Error("Fractalloc: Valid entry mismatch: found ",
                   validAllocations, " entries, but ",
-                  chainStart->mValidEntries, " were actually registered"
+                  pool->mValidEntries, " were actually registered in pool ",
+                  Logger::Hex(pool)
                );
                failure = true;
             }
 
-            if (validBytes != chainStart->mAllocatedByFrontend) {
-               Logger::Error("Valid byte usage mismatch: found ",
+            if (validBytes != pool->mAllocatedByFrontend) {
+               Logger::Error("Fractalloc: Valid byte usage mismatch: found ",
                   validBytes, " bytes in use, but ",
-                  chainStart->mAllocatedByFrontend, " were actually registered"
+                  pool->mAllocatedByFrontend, " were actually registered in pool ",
+                  Logger::Hex(pool)
                );
                failure = true;
             }
@@ -984,7 +990,7 @@ namespace Langulus::Fractalloc
                return false;
          }
 
-         chainStart = chainStart->mNext;
+         pool = pool->mNext;
       }
 
       return true;
@@ -994,7 +1000,7 @@ namespace Langulus::Fractalloc
    bool Allocator::IntegrityCheck() {
       // Integrity check the default chain                              
       if (Instance.mMainPoolChain) {
-         Logger::Info("Integrity check: mMainPoolChain...");
+         VERBOSE("Integrity check: mMainPoolChain...");
          if (not Instance.IntegrityCheckChain(Instance.mMainPoolChain))
             return false;
       }
@@ -1003,7 +1009,7 @@ namespace Langulus::Fractalloc
       int size = 1;
       for (auto& sizeChain : Instance.mSizePoolChain) {
          if (sizeChain) {
-            Logger::Info("Integrity check: mSizePoolChain #", size++, "...");
+            VERBOSE("Integrity check: mSizePoolChain #", size++, "...");
             if (not Instance.IntegrityCheckChain(sizeChain))
                return false;
          }
@@ -1013,7 +1019,7 @@ namespace Langulus::Fractalloc
       for (auto& typeChain : Instance.mInstantiatedTypes) {
          auto& relevantPool = typeChain->GetPool<Pool>();
          if (relevantPool) {
-            Logger::Info("Integrity check for type ", typeChain->mToken, "...");
+            VERBOSE("Integrity check for type ", typeChain->mToken, "...");
             if (not Instance.IntegrityCheckChain(relevantPool))
                return false;
          }
