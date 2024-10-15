@@ -955,7 +955,7 @@ namespace Langulus::Fractalloc
                      Logger::Warning(
                         "Fractalloc: Suspicious reference count in allocation ",
                         Logger::Hex(allocation), " of size ", allocation->GetAllocatedSize(),
-                        " in pool ", Logger::Hex(pool)
+                        " in pool ", Logger::Hex(pool), ", entry #", i, " of ", pool->mEntries
                      );
                   }
 
