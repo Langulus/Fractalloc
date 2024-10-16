@@ -10,7 +10,7 @@
 #include "Pool.inl"
 #include "Allocation.inl"
 
-#if 1
+#if 0
    #define VERBOSE(...)      Langulus::Logger::Info(__VA_ARGS__)
    #define VERBOSE_TAB(...)  const auto tab = Langulus::Logger::InfoTab(__VA_ARGS__)
 #else
@@ -1006,7 +1006,7 @@ namespace Langulus::Fractalloc
       }
 
       // Integrity check all size chains                                
-      int size = 1;
+      UNUSED() int size = 1;
       for (auto& sizeChain : Instance.mSizePoolChain) {
          if (sizeChain) {
             VERBOSE("Integrity check: mSizePoolChain #", size++, "...");
