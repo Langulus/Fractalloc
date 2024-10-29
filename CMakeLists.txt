@@ -29,7 +29,7 @@ if (NOT LANGULUS_FEATURE_MANAGED_MEMORY)
     message(FATAL_ERROR "Fractalloc can be built only with enabled LANGULUS_FEATURE_MANAGED_MEMORY")
 endif()
 
-add_library(LangulusFractalloc ${LANGULUS_LIBRARY_TYPE}
+add_langulus_library(LangulusFractalloc
     $<TARGET_OBJECTS:LangulusLogger>
     $<TARGET_OBJECTS:LangulusRTTI>
     source/Allocator.cpp
