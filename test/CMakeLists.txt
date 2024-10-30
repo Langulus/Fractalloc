@@ -4,14 +4,7 @@ file(GLOB_RECURSE
 	*.cpp
 )
 
-add_executable(LangulusFractallocTest ${LANGULUS_FRACTALLOC_TEST_SOURCES})
-
-target_link_libraries(LangulusFractallocTest
-	PRIVATE		LangulusFractalloc
-				Catch2
-)
-
-add_test(
-	NAME		LangulusFractallocTest 
-	COMMAND		LangulusFractallocTest
+add_langulus_test(LangulusFractallocTest
+	SOURCES		${LANGULUS_FRACTALLOC_TEST_SOURCES}
+	LIBRARIES	LangulusFractalloc
 )
