@@ -192,7 +192,9 @@ namespace Langulus::Fractalloc
       LANGULUS_ASSUME(DevAssumes, size,
          "Zero reallocation is not allowed");
       LANGULUS_ASSUME(DevAssumes, previous->mReferences,
-         "Deallocating an unused allocation");
+         "Reallocating an unused allocation");
+      LANGULUS_ASSUME(DevAssumes, previous->mReferences == 1,
+         "Reallocating allocation used from multiple places");
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
          const auto oldSize = previous->GetTotalSize();
