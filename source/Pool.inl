@@ -159,7 +159,7 @@ namespace Langulus::Fractalloc
          if (reinterpret_cast<Byte*>(newEntry) + mThreshold >= mMemoryEnd) {
             // Reset carriage and shift level when it goes beyond       
             mThresholdPrevious = mThreshold;
-            mThreshold /= 2;
+            mThreshold >>= Offset {1};
          }
       }
 
