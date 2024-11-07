@@ -11,9 +11,11 @@
 #include "Allocation.inl"
 
 #if 0
+   #define VERBOSE_ENABLED() 1
    #define VERBOSE(...)      Langulus::Logger::Info(__VA_ARGS__)
    #define VERBOSE_TAB(...)  const auto tab = Langulus::Logger::InfoTab(__VA_ARGS__)
 #else
+   #define VERBOSE_ENABLED() 0
    #define VERBOSE(...)      LANGULUS(NOOP)
    #define VERBOSE_TAB(...)  LANGULUS(NOOP)
 #endif
@@ -54,6 +56,72 @@ namespace Langulus::Fractalloc
    /// Global allocator interface                                             
    Allocator Instance {};
 
+#if VERBOSE_ENABLED()
+   void Allocator::DumpAllocation(RTTI::DMeta hint, const Pool* pool, const Allocation* memory) noexcept {
+      VERBOSE_TAB(
+         "Fractalloc: ", Logger::Green, "New allocation ", Logger::Hex(memory),
+         " of size ", Size {memory->mAllocatedBytes}, ", in pool ", Logger::Hex(pool)
+      );
+
+      if (hint) {
+         switch (hint->mPoolTactic) {
+         case RTTI::PoolTactic::Size:
+            VERBOSE("Type was: ", hint->mToken, " (size pool tactic)");
+            break;
+         case RTTI::PoolTactic::Type:
+            VERBOSE("Type was: ", hint->mToken, " (type pool tactic)");
+            break;
+         case RTTI::PoolTactic::Main:
+            VERBOSE("Type was: ", hint->mToken, " (default pool tactic)");
+            break;
+         }
+      }
+      else VERBOSE("Type was unknown (default pool tactic)");
+
+      constexpr Count wideness = 128;
+      const auto bytesPerChar = pool->GetAllocatedByBackend() / wideness;
+      char buffer[wideness + 3];
+      memset(buffer, ' ', wideness + 3);
+      char buffer2[wideness + 3];
+      memset(buffer2, ' ', wideness + 3);
+      buffer[0] = '[';
+      buffer[wideness+1] = ']';
+      buffer[wideness+2] = '\0';
+      buffer2[wideness+2] = '\0';
+
+      bool encountered = false;
+      for (Offset entry = 0; entry < pool->mEntries; ++entry) {
+         auto a = pool->AllocationFromIndex(entry);
+         if (a->GetUses()) {
+            auto start = (reinterpret_cast<const char*>(a)
+                       -  reinterpret_cast<const char*>(pool->GetPoolStart()))
+                       / bytesPerChar;
+            auto end   = start + a->GetTotalSize() / bytesPerChar;
+
+            if (end == start)
+               end = start + 1;
+
+            for (auto i = start; i != end; ++i)
+               buffer[i + 1] = (buffer[i] == '#' ? 'E' : '#');
+
+            if (a == memory) {
+               for (auto i = start; i != end; ++i)
+                  buffer2[i + 1] = '^';
+               encountered = true;
+            }
+         }
+      }
+
+      if (not encountered) {
+         Logger::Error("Entry ", Logger::Hex(memory),
+            " was not encountered in pool ", Logger::Hex(pool));
+      }
+
+      VERBOSE(buffer);
+      VERBOSE(buffer2);
+   }
+#endif
+
    /// Allocate a memory entry                                                
    ///   @attention doesn't call any constructors                             
    ///   @attention doesn't throw - check if return is nullptr                
@@ -91,31 +159,16 @@ namespace Langulus::Fractalloc
       }
 
       if (memory) {
-         VERBOSE_TAB(
-            "Fractalloc: ", Logger::Green, "New allocation ", Logger::Hex(memory),
-            " of size ", Size {size}, ", in pool ", Logger::Hex(pool)
-         );
-
-         if (hint) {
-            switch (hint->mPoolTactic) {
-            case RTTI::PoolTactic::Size:
-               VERBOSE("Type was: ", hint->mToken, " (size pool tactic)");
-               break;
-            case RTTI::PoolTactic::Type:
-               VERBOSE("Type was: ", hint->mToken, " (type pool tactic)");
-               break;
-            case RTTI::PoolTactic::Main:
-               VERBOSE("Type was: ", hint->mToken, " (default pool tactic)");
-               break;
-            }
-         }
-         else VERBOSE("Type was unknown (default pool tactic)");
+         #if VERBOSE_ENABLED()
+            DumpAllocation(hint, pool, memory);
+         #endif
 
          #if LANGULUS_FEATURE(MEMORY_STATISTICS)
             auto& stats = Instance.mStatistics;
             stats.mEntries += 1;
             stats.mBytesAllocatedByFrontend += memory->GetTotalSize();
          #endif
+
          return memory;
       }
 
@@ -132,22 +185,19 @@ namespace Langulus::Fractalloc
 
       memory = pool->Allocate(size);
 
-      VERBOSE_TAB(
-         "Fractalloc: ", Logger::Green, "New allocation ", Logger::Hex(memory),
-         " of size ", Size {size}, ", in pool ", Logger::Hex(pool)
-      );
+      #if VERBOSE_ENABLED()
+         DumpAllocation(hint, pool, memory);
+      #endif
 
       if (hint) {
          switch (hint->mPoolTactic) {
          case RTTI::PoolTactic::Size: {
-            VERBOSE("Type was: ", hint->mToken, " (size pool tactic)");
             auto& sizeChain = Instance.mSizePoolChain[Inner::FastLog2(hint->mSize)];
             pool->mNext = sizeChain;
             sizeChain = pool;
             break;
          }
          case RTTI::PoolTactic::Type: {
-            VERBOSE("Type was: ", hint->mToken, " (type pool tactic)");
             auto& relevantPool = hint->GetPool<Pool>();
             pool->mNext = relevantPool;
             relevantPool = pool;
@@ -155,21 +205,20 @@ namespace Langulus::Fractalloc
             break;
          }
          case RTTI::PoolTactic::Main:
-            VERBOSE("Type was: ", hint->mToken, " (main pool tactic)");
             pool->mNext = Instance.mMainPoolChain;
             Instance.mMainPoolChain = pool;
             break;
          }
       }
       else {
-         VERBOSE("Type was unknown (main pool tactic)");
          pool->mNext = Instance.mMainPoolChain;
          Instance.mMainPoolChain = pool;
       }
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-      Instance.mStatistics.AddPool(pool);
+         Instance.mStatistics.AddPool(pool);
       #endif
+
       return memory;
    }
 

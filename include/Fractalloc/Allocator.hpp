@@ -107,6 +107,8 @@ namespace Langulus::Fractalloc
       const Allocation* FindInChain(const void*, const Pool*) const IF_UNSAFE(noexcept);
       bool ContainedInChain(const void*, const Pool*) const IF_UNSAFE(noexcept);
 
+      static void DumpAllocation(RTTI::DMeta hint, const Pool*, const Allocation*) noexcept;
+
    public:
       NOD() LANGULUS_API(FRACTALLOC)
       static Allocation* Allocate(RTTI::DMeta, Offset) IF_UNSAFE(noexcept);
