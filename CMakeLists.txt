@@ -20,9 +20,9 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
     )
 
     # Add Langulus::Core/Logger/RTTI libraries                              
-    fetch_langulus_module(Core   GIT_TAG 393d95b6ab13fc5846bda8a3044e4ca62f02fd5a)
-    fetch_langulus_module(Logger GIT_TAG 69626cd4c738195df0929a1cd867317422506e61)
-    fetch_langulus_module(RTTI   GIT_TAG 720e675b1ea114156c309fe44871e03557e0a64f)
+    fetch_langulus_module(Core   GIT_TAG 35756f11d2f9c475f27b094b8d4c82cd453969fc)
+    fetch_langulus_module(Logger GIT_TAG dafbeb825071ec60d8403254143f75606151a7e6)
+    fetch_langulus_module(RTTI   GIT_TAG fc49750884ac943dff4261ac5b8dfb2c148423d7)
 endif()
 
 if (NOT LANGULUS_FEATURE_MANAGED_MEMORY)
