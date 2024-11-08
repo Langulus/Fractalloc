@@ -367,15 +367,22 @@ namespace Langulus::Fractalloc
    }
    
    /// Deallocates all unused pools                                           
-   void Allocator::CollectGarbage() {
+   ///   @return true if there's at least one pool remaining allocated        
+   bool Allocator::CollectGarbage() {
+      bool result = false;
       Instance.mLastFoundPool = nullptr;
 
       // Cleanup the main chain                                         
       Instance.CollectGarbageChain(Instance.mMainPoolChain);
+      if (Instance.mMainPoolChain)
+         result = true;
 
       // Cleanup all size chains                                        
-      for (auto& sizeChain : Instance.mSizePoolChain)
+      for (auto& sizeChain : Instance.mSizePoolChain) {
          Instance.CollectGarbageChain(sizeChain);
+         if (sizeChain)
+            result = true;
+      }
 
       // Cleanup all type chains                                        
       auto& types = Instance.mInstantiatedTypes;
@@ -386,9 +393,13 @@ namespace Langulus::Fractalloc
          // Also discard the type if no pools remain                    
          if (not relevantPool)
             typeChain = types.erase(typeChain);
-         else
+         else {
             ++typeChain;
+            result = true;
+         }
       }
+
+      return result;
    }
    
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -719,7 +730,7 @@ namespace Langulus::Fractalloc
    
    /// Get allocator statistics                                               
    ///   @return a reference to the statistics structure                      
-   const Allocator::Statistics& Allocator::GetStatistics() noexcept {
+   auto Allocator::GetStatistics() noexcept -> const Statistics& {
       return Instance.mStatistics;
    }
 
