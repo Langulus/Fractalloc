@@ -132,7 +132,7 @@ namespace Langulus::Fractalloc
       static void DeallocatePool(Pool*) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
-      static void CollectGarbage();
+      static bool CollectGarbage();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          LANGULUS_API(FRACTALLOC)
@@ -141,7 +141,7 @@ namespace Langulus::Fractalloc
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
          NOD() LANGULUS_API(FRACTALLOC)
-         static const Statistics& GetStatistics() noexcept;
+         static auto GetStatistics() noexcept -> const Statistics&;
 
          LANGULUS_API(FRACTALLOC)
          static void DumpPools() noexcept;
