@@ -67,38 +67,38 @@ namespace Langulus::Fractalloc
       static constexpr Offset InvalidIndex = ::std::numeric_limits<Offset>::max();
 
    public:
-      NOD() static constexpr Offset GetSize() noexcept;
-      NOD() static constexpr Offset GetNewAllocationSize(Offset) noexcept;
+      static constexpr Offset GetSize() noexcept;
+      static constexpr Offset GetNewAllocationSize(Offset) noexcept;
 
       template<class T = Allocation>
-      NOD() T* GetPoolStart() noexcept;
+      auto GetPoolStart() noexcept -> T*;
       template<class T = Allocation>
-      NOD() T const* GetPoolStart() const noexcept;
+      auto GetPoolStart() const noexcept -> T const*;
 
-      NOD() constexpr Offset GetMinAllocation() const noexcept;
-      NOD() constexpr Offset GetTotalSize() const noexcept;
-      NOD() constexpr Count  GetMaxEntries() const noexcept;
-      NOD() constexpr Offset GetAllocatedByBackend() const noexcept;
-      NOD() constexpr Offset GetAllocatedByFrontend() const noexcept;
-      NOD() constexpr bool IsInUse() const noexcept;
-      NOD() constexpr bool CanContain(Offset) const noexcept;
-      NOD() bool Contains(const void*) const noexcept;
-      NOD() const Allocation* Find(const void*) const IF_UNSAFE(noexcept);
+      constexpr Offset GetMinAllocation() const noexcept;
+      constexpr Offset GetTotalSize() const noexcept;
+      constexpr Count  GetMaxEntries() const noexcept;
+      constexpr Offset GetAllocatedByBackend() const noexcept;
+      constexpr Offset GetAllocatedByFrontend() const noexcept;
+      constexpr bool IsInUse() const noexcept;
+      constexpr bool CanContain(Offset) const noexcept;
+      bool Contains(const void*) const noexcept;
+      auto Find(const void*) const IF_UNSAFE(noexcept) -> const Allocation*;
 
-      NOD() Allocation* Allocate(Offset) IF_UNSAFE(noexcept);
-      NOD() bool Reallocate(Allocation*, Offset) IF_UNSAFE(noexcept);
+      auto Allocate(Offset) IF_UNSAFE(noexcept) -> Allocation*;
+      bool Reallocate(Allocation*, Offset) IF_UNSAFE(noexcept);
       void Deallocate(Allocation*) IF_UNSAFE(noexcept);
       void FreePoolChain();
       void Null();
       void Touch();
       void Trim();
 
-      NOD() Offset ThresholdFromIndex(Offset) const noexcept;
-      NOD() const Allocation* AllocationFromIndex(Offset) const noexcept;
-      NOD() Offset IndexFromAddress(const void*) const IF_UNSAFE(noexcept);
-      NOD() Offset ValidateIndex(Offset) const noexcept;
-      NOD() Offset UpIndex(Offset) const noexcept;
-      NOD() const Allocation* AllocationFromAddress(const void*) const IF_UNSAFE(noexcept);
+      Offset ThresholdFromIndex(Offset) const noexcept;
+      Offset IndexFromAddress(const void*) const IF_UNSAFE(noexcept);
+      Offset ValidateIndex(Offset) const noexcept;
+      Offset UpIndex(Offset) const noexcept;
+      auto   AllocationFromIndex(Offset) const noexcept -> const Allocation*;
+      auto   AllocationFromAddress(const void*) const IF_UNSAFE(noexcept) -> const Allocation*;
    };
 
 } // namespace Langulus::Fractalloc

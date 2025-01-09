@@ -97,35 +97,35 @@ namespace Langulus::Fractalloc
          LANGULUS_API(FRACTALLOC)
          static void DumpPool(Offset, const Pool*) noexcept;
          
-         NOD() LANGULUS_API(FRACTALLOC)
+         LANGULUS_API(FRACTALLOC)
          bool IntegrityCheckChain(const Pool*);
       #endif
 
       LANGULUS_API(FRACTALLOC)
       void CollectGarbageChain(Pool*&);
 
-      const Allocation* FindInChain(const void*, const Pool*) const IF_UNSAFE(noexcept);
+      auto FindInChain(const void*, const Pool*) const IF_UNSAFE(noexcept) -> const Allocation*;
       bool ContainedInChain(const void*, const Pool*) const IF_UNSAFE(noexcept);
 
       static void DumpAllocation(RTTI::DMeta hint, const Pool*, const Allocation*) noexcept;
 
    public:
-      NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Allocate(RTTI::DMeta, Offset) IF_UNSAFE(noexcept);
+      LANGULUS_API(FRACTALLOC)
+      static auto Allocate(RTTI::DMeta, Offset) IF_UNSAFE(noexcept) -> Allocation*;
 
-      NOD() LANGULUS_API(FRACTALLOC)
-      static Allocation* Reallocate(Offset, Allocation*) IF_UNSAFE(noexcept);
+      LANGULUS_API(FRACTALLOC)
+      static auto Reallocate(Offset, Allocation*) IF_UNSAFE(noexcept) -> Allocation*;
 
       LANGULUS_API(FRACTALLOC)
       static void Deallocate(Allocation*) IF_UNSAFE(noexcept);
 
-      NOD() LANGULUS_API(FRACTALLOC)
+      LANGULUS_API(FRACTALLOC)
       static const Allocation* Find(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
-      NOD() LANGULUS_API(FRACTALLOC)
+      LANGULUS_API(FRACTALLOC)
       static bool CheckAuthority(RTTI::DMeta, const void*) IF_UNSAFE(noexcept);
 
-      NOD() LANGULUS_API(FRACTALLOC)
+      LANGULUS_API(FRACTALLOC)
       static Pool* AllocatePool(DMeta, Offset) IF_UNSAFE(noexcept);
 
       LANGULUS_API(FRACTALLOC)
@@ -140,7 +140,7 @@ namespace Langulus::Fractalloc
       #endif
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-         NOD() LANGULUS_API(FRACTALLOC)
+         LANGULUS_API(FRACTALLOC)
          static auto GetStatistics() noexcept -> const Statistics&;
 
          LANGULUS_API(FRACTALLOC)
