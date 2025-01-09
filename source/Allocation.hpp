@@ -27,8 +27,8 @@ namespace Langulus::Fractalloc
    /// This is a single allocation record                                     
    ///                                                                        
    struct Allocation final {
-   friend class Pool;
-   friend struct Allocator;
+      friend class Pool;
+      friend struct Allocator;
    protected:
       // Allocated bytes for this chunk                                 
       Offset mAllocatedBytes;
@@ -58,20 +58,20 @@ namespace Langulus::Fractalloc
 
       constexpr Allocation(Offset, Pool*) noexcept;
 
-      NOD() static constexpr Offset GetSize() noexcept;
-      NOD() static constexpr Offset GetNewAllocationSize(Offset) noexcept;
-      NOD() static constexpr Offset GetMinAllocation() noexcept;
+      static constexpr Offset GetSize() noexcept;
+      static constexpr Offset GetNewAllocationSize(Offset) noexcept;
+      static constexpr Offset GetMinAllocation() noexcept;
 
-      NOD() constexpr Count GetUses() const noexcept;
-      NOD() Byte* GetBlockStart() const noexcept;
-      NOD() Byte const* GetBlockEnd() const noexcept;
-      NOD() constexpr Offset GetTotalSize() const noexcept;
-      NOD() constexpr Offset GetAllocatedSize() const noexcept;
-      NOD() bool Contains(const void*) const noexcept;
-      NOD() bool CollisionFree(const Allocation&) const noexcept;
+      constexpr Count GetUses() const noexcept;
+      constexpr Offset GetTotalSize() const noexcept;
+      constexpr Offset GetAllocatedSize() const noexcept;
+      auto GetBlockStart() const noexcept -> Byte*;
+      auto GetBlockEnd() const noexcept -> Byte const*;
+      bool Contains(const void*) const noexcept;
+      bool CollisionFree(const Allocation&) const noexcept;
 
       template<class T>
-      NOD() T* As() const noexcept;
+      T* As() const noexcept;
 
       constexpr void Keep() noexcept;
       constexpr void Keep(Count) noexcept;

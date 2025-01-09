@@ -231,11 +231,10 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of bytes to allocate                        
    ///   @param previous - the previous memory entry                          
    ///   @return the reallocated memory entry, or nullptr if out of memory    
-   Allocation* Allocator::Reallocate(Offset size, Allocation* previous)
-   IF_UNSAFE(noexcept) {
+   Allocation* Allocator::Reallocate(Offset size, Allocation* previous) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, previous,
          "Reallocating nullptr");
-      UNUSED() const auto as = previous->GetAllocatedSize();
+      [[maybe_unused]] const auto as = previous->GetAllocatedSize();
       LANGULUS_ASSUME(DevAssumes, size != as,
          "Reallocation suboptimal - size is same as previous");
       LANGULUS_ASSUME(DevAssumes, size,
@@ -1059,6 +1058,7 @@ namespace Langulus::Fractalloc
    }
    
    /// Integrity checks                                                       
+   ///   @return true if no memory errors occured                             
    bool Allocator::IntegrityCheck() {
       // Integrity check the default chain                              
       if (Instance.mMainPoolChain) {
@@ -1068,7 +1068,7 @@ namespace Langulus::Fractalloc
       }
 
       // Integrity check all size chains                                
-      UNUSED() int size = 1;
+      [[maybe_unused]] int size = 1;
       for (auto& sizeChain : Instance.mSizePoolChain) {
          if (sizeChain) {
             VERBOSE("Integrity check: mSizePoolChain #", size++, "...");
