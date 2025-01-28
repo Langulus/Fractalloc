@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
-#include <RTTI/Meta.hpp>
+#include <Langulus/RTTI/Meta.hpp>
 
 
 namespace Langulus::Fractalloc
