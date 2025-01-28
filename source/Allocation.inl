@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Allocation.hpp"
-#include <Core/Utilities.hpp>
+#include <Langulus/Core/Utilities.hpp>
 
 
 namespace Langulus::Fractalloc

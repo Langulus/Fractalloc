@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Allocation.inl"
-#include <Fractalloc/Allocator.hpp>
+#include <Langulus/Fractalloc/Allocator.hpp>
 #include <bit>
 
 

@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <Core/Config.hpp>
+#include <Langulus/Core/Config.hpp>
 
 
 #if defined(LANGULUS_EXPORT_ALL) or defined(LANGULUS_EXPORT_FRACTALLOC)
