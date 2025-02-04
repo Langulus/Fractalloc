@@ -167,6 +167,10 @@ namespace Langulus::Fractalloc
             auto& stats = Instance.mStatistics;
             stats.mEntries += 1;
             stats.mBytesAllocatedByFrontend += memory->GetTotalSize();
+            LANGULUS_ASSUME(DevAssumes,
+               stats.mBytesAllocatedByFrontend <= stats.mBytesAllocatedByBackend,
+               "Impossible amount of frontend allocation"
+            );
          #endif
 
          return memory;
@@ -254,6 +258,10 @@ namespace Langulus::Fractalloc
             auto& stats = Instance.mStatistics;
             stats.mBytesAllocatedByFrontend -= oldSize;
             stats.mBytesAllocatedByFrontend += previous->GetTotalSize();
+            LANGULUS_ASSUME(DevAssumes,
+               stats.mBytesAllocatedByFrontend <= stats.mBytesAllocatedByBackend,
+               "Impossible amount of frontend allocation"
+            );
          #endif
 
          VERBOSE(
@@ -685,7 +693,12 @@ namespace Langulus::Fractalloc
    }
    
 #if LANGULUS_FEATURE(MEMORY_STATISTICS)
-   bool Allocator::Statistics::operator == (const Statistics& rhs) const noexcept {
+   bool Allocator::Statistics::operator == (const Statistics& rhs) const IF_UNSAFE(noexcept) {
+      LANGULUS_ASSUME(DevAssumes,
+         mBytesAllocatedByFrontend <= mBytesAllocatedByBackend,
+         "Impossible amount of frontend allocation"
+      );
+
       return mBytesAllocatedByBackend == rhs.mBytesAllocatedByBackend
          and mBytesAllocatedByFrontend == rhs.mBytesAllocatedByFrontend
          and mEntries == rhs.mEntries
@@ -987,16 +1000,24 @@ namespace Langulus::Fractalloc
 
    /// Account for a newly allocated pool                                     
    ///   @param pool - the pool to account for                                
-   void Allocator::Statistics::AddPool(const Pool* pool) noexcept {
+   void Allocator::Statistics::AddPool(const Pool* pool) IF_UNSAFE(noexcept) {
       mBytesAllocatedByBackend += pool->GetTotalSize();
       mBytesAllocatedByFrontend += pool->GetAllocatedByFrontend();
+      LANGULUS_ASSUME(DevAssumes,
+         mBytesAllocatedByFrontend <= mBytesAllocatedByBackend,
+         "Impossible amount of frontend allocation"
+      );
       ++mPools;
       ++mEntries;
    }
    
    /// Account for a removed pool                                             
    ///   @param pool - the pool to account for                                
-   void Allocator::Statistics::DelPool(const Pool* pool) noexcept {
+   void Allocator::Statistics::DelPool(const Pool* pool) IF_UNSAFE(noexcept) {
+      LANGULUS_ASSUME(DevAssumes,
+         mBytesAllocatedByBackend >= pool->GetTotalSize(),
+         "Impossible amount of backend allocation"
+      );
       mBytesAllocatedByBackend -= pool->GetTotalSize();
       --mPools;
    }

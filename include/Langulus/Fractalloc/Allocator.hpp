@@ -48,10 +48,10 @@ namespace Langulus::Fractalloc
                Count mVerbDefinitions {};
             #endif
 
-            bool operator == (const Statistics&) const noexcept;
+            bool operator == (const Statistics&) const IF_UNSAFE(noexcept);
 
-            void AddPool(const Pool*) noexcept;
-            void DelPool(const Pool*) noexcept;
+            void AddPool(const Pool*) IF_UNSAFE(noexcept);
+            void DelPool(const Pool*) IF_UNSAFE(noexcept);
          };
       
          ///                                                                  
