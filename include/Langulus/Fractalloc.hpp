@@ -6,8 +6,8 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "../source/Allocation.hpp"
-#include "../source/Pool.hpp"
+#include "../../source/Allocation.hpp"
+#include "../../source/Pool.hpp"
 #include <unordered_set>
 #include <optional>
 
@@ -162,5 +162,5 @@ namespace Langulus::Fractalloc
 
 } // namespace Langulus::Fractalloc
 
-#include "../source/Allocation.inl"
-#include "../source/Pool.inl"
+#include "../../source/Allocation.inl"
+#include "../../source/Pool.inl"

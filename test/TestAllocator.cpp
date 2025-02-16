@@ -5,25 +5,8 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Main.hpp"
-#include <catch2/catch.hpp>
-#include <random>
+#include "Common.hpp"
 
-
-/// See https://github.com/catchorg/Catch2/blob/devel/docs/tostring.md        
-CATCH_TRANSLATE_EXCEPTION(::Langulus::Exception const& ex) {
-   #if LANGULUS(DEBUG)
-      return ::std::string {ex.GetMessage()};
-   #else
-      return ::std::string {ex.GetName()};
-   #endif
-}
-
-using timer = Catch::Benchmark::Chronometer;
-template<class T>
-using some = std::vector<T>;
-template<class T>
-using uninitialized = Catch::Benchmark::storage_for<T>;
 
 std::random_device rd;
 std::mt19937 gen(rd());

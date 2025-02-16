@@ -5,22 +5,10 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#pragma once
-#include <Langulus/Fractalloc/Allocator.hpp>
 
-using namespace Langulus;
-using namespace Langulus::Fractalloc;
+/// INTENTIONALLY NOT GUARDED                                                 
+/// Include this file once in each cpp file, after all other headers          
+#include <Langulus/Fractalloc.hpp>
+#include <Langulus/Testing.hpp>
 
-//#define LANGULUS_STD_BENCHMARK
-
-//#ifdef LANGULUS_STD_BENCHMARK
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-//#endif
-
-inline Byte* asbytes(void* a) noexcept {
-	return reinterpret_cast<Byte*>(a);
-}
-
-inline const Byte* asbytes(const void* a) noexcept {
-	return reinterpret_cast<const Byte*>(a);
-}
+using namespace Fractalloc;

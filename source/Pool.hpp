@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <Langulus/Fractalloc/Allocator.hpp>
+#include <Langulus/Fractalloc.hpp>
 
 
 namespace Langulus::Fractalloc
