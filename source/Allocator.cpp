@@ -5,8 +5,8 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include <Langulus/Fractalloc/Allocator.hpp>
-#include <Langulus/RTTI/Assume.hpp>
+#include <Langulus/Fractalloc.hpp>
+#include <Langulus/Core/Assume.hpp>
 #include "Pool.inl"
 #include "Allocation.inl"
 

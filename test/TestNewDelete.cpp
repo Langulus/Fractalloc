@@ -5,17 +5,8 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Main.hpp"
-#include <catch2/catch.hpp>
+#include "Common.hpp"
 
-/// See https://github.com/catchorg/Catch2/blob/devel/docs/tostring.md        
-CATCH_TRANSLATE_EXCEPTION(::Langulus::Exception const& ex) {
-   #if LANGULUS(DEBUG)
-      return ::std::string {ex.GetMessage()};
-   #else
-      return ::std::string {ex.GetName()};
-   #endif
-}
 
 #if LANGULUS_FEATURE(NEWDELETE)
 SCENARIO("Testing new/delete operators", "[new][delete]") {
