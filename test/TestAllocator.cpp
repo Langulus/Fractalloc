@@ -455,12 +455,12 @@ SCENARIO("Testing pool functions", "[allocator]") {
 }
 
 SCENARIO("Testing allocator functions", "[allocator]") {
+   (void) Allocator::CollectGarbage();
+
    GIVEN("An allocation") {
       Allocation* entry = nullptr;
 
       WHEN("Memory is allocated on the heap") {
-         IF_LANGULUS_MANAGED_MEMORY(Allocator::CollectGarbage());
-
          entry = Allocator::Allocate(nullptr, 512);
 
          REQUIRE(entry);
@@ -485,8 +485,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          Allocator::Deallocate(entry);
 
          #ifdef LANGULUS_STD_BENCHMARK // Last result: 
-            #include "CollectGarbage.inl"
-
             BENCHMARK_ADVANCED("Allocator::Allocate(5)") (timer meter) {
                std::vector<Allocation*> storage(meter.runs());
                meter.measure([&](int i) {
@@ -500,8 +498,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                      LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
                }
             };
-
-            #include "CollectGarbage.inl"
 
             BENCHMARK_ADVANCED("malloc(5)") (timer meter) {
                std::vector<void*> storage(meter.runs());
@@ -517,8 +513,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                }
             };
 
-            #include "CollectGarbage.inl"
-
             BENCHMARK_ADVANCED("Allocator::Allocate(512)") (timer meter) {
                std::vector<Allocation*> storage(meter.runs());
                meter.measure([&](int i) {
@@ -532,8 +526,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                      LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
                }
             };
-
-            #include "CollectGarbage.inl"
 
             BENCHMARK_ADVANCED("malloc(512)") (timer meter) {
                std::vector<void*> storage(meter.runs());
@@ -549,8 +541,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                }
             };
 
-            #include "CollectGarbage.inl"
-
             BENCHMARK_ADVANCED("Allocator::Allocate(Pool::DefaultPoolSize)") (timer meter) {
                std::vector<Allocation*> storage(meter.runs());
                meter.measure([&](int i) {
@@ -564,8 +554,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                      LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
                }
             };
-
-            #include "CollectGarbage.inl"
 
             BENCHMARK_ADVANCED("malloc(Pool::DefaultPoolSize)") (timer meter) {
                std::vector<void*> storage(meter.runs());
@@ -584,8 +572,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
       }
 
       WHEN("Referenced once") {
-         Allocator::CollectGarbage();
-
          entry = Allocator::Allocate(nullptr, 512);
          REQUIRE(entry);
          entry->Keep();
@@ -601,8 +587,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
       }
 
       WHEN("Referenced multiple times") {
-         Allocator::CollectGarbage();
-
          entry = Allocator::Allocate(nullptr, 512);
          REQUIRE(entry);
          entry->Keep(5);
@@ -618,8 +602,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
       }
 
       WHEN("Dereferenced once without deletion") {
-         Allocator::CollectGarbage();
-
          entry = Allocator::Allocate(nullptr, 512);
          REQUIRE(entry);
          entry->Keep();
@@ -634,8 +616,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
       }
 
       WHEN("Dereferenced multiple times without deletion") {
-         Allocator::CollectGarbage();
-
          entry = Allocator::Allocate(nullptr, 512);
          REQUIRE(entry);
          entry->Keep(5);
@@ -652,8 +632,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
       }
 
       WHEN("Dereferenced once with deletion") {
-         Allocator::CollectGarbage();
-
          entry = Allocator::Allocate(nullptr, 512);
          REQUIRE(entry);
          Allocator::Deallocate(entry);
@@ -664,8 +642,6 @@ SCENARIO("Testing allocator functions", "[allocator]") {
       }
 
       WHEN("Dereferenced multiple times with deletion") {
-         Allocator::CollectGarbage();
-
          entry = Allocator::Allocate(nullptr, 512);
          REQUIRE(entry);
          entry->Keep(5);
