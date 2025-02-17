@@ -10,9 +10,9 @@
 
 #if LANGULUS_FEATURE(NEWDELETE)
 SCENARIO("Testing new/delete operators", "[new][delete]") {
+   (void)Allocator::CollectGarbage();
 
    GIVEN("POD dynamic memory allocated with overriden new operator") {
-      Allocator::CollectGarbage();
       auto meta = MetaData::Of<int>();
       auto a = new int[1024];
       int static_memory[64] = {};
