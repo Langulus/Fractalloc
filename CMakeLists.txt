@@ -10,7 +10,7 @@ if (PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     include(LangulusUtilities.cmake)
-    fetch_langulus_module(RTTI GIT_TAG c7620c931c2cf26ac345a9155b569631f5223896)
+    fetch_langulus_module(RTTI GIT_TAG af0c2f6bf25d0436caf098b354350c7b681d1036)
 endif()
 
 add_langulus_library(LangulusFractalloc
