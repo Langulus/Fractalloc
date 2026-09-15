@@ -83,8 +83,8 @@ jobs:
           ${{matrix.cmake_args}}
           -DCMAKE_BUILD_TYPE=${{matrix.build}}
           -DCMAKE_CXX_FLAGS="${{matrix.feature[2]}}"
-          -DLANGULUS_FEATURE_MANAGED_REFLECTION=${{matrix.managed}}
-          -DLANGULUS_TESTING=ON
+          -DLANGULUS_OPTION_MANAGED_REFLECTION=${{matrix.managed}}
+          -DLANGULUS_OPTION_TESTING=ON
 
       - if: matrix.os == 'windows-latest'
         name: Configure (Windows)
@@ -93,8 +93,8 @@ jobs:
           ${{matrix.cmake_args}} -T "${{matrix.cxx}}"
           -DCMAKE_BUILD_TYPE=${{matrix.build}}
           -DCMAKE_CXX_FLAGS="${{matrix.feature[3]}} /EHsc"
-          -DLANGULUS_FEATURE_MANAGED_REFLECTION=${{matrix.managed}}
-          -DLANGULUS_TESTING=ON
+          -DLANGULUS_OPTION_MANAGED_REFLECTION=${{matrix.managed}}
+          -DLANGULUS_OPTION_TESTING=ON
 
       - name: Build
         run: cmake --build build -j4 --config ${{matrix.build}}
