@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "Config.hpp"
+#include <Langulus/Core.hpp>
 #include <Langulus/MetaOf.hpp>
 
 
