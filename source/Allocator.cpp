@@ -130,7 +130,7 @@ namespace Langulus::Fractalloc
    ///   @param size - the number of bytes to allocate                        
    ///   @return the allocation, or nullptr if out of memory                  
    Allocation* Allocator::Allocate(RTTI::DMeta hint, Offset size) IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes, size, "Zero allocation is not allowed");
+      LglsAssumeDev(size, "Zero allocation is not allowed");
 
       // Decide pool chain, based on hint                               
       Pool* pool = nullptr;
@@ -167,7 +167,7 @@ namespace Langulus::Fractalloc
             auto& stats = Instance.mStatistics;
             stats.mEntries += 1;
             stats.mBytesAllocatedByFrontend += memory->GetTotalSize();
-            LANGULUS_ASSUME(DevAssumes,
+            LglsAssumeDev(
                stats.mBytesAllocatedByFrontend <= stats.mBytesAllocatedByBackend,
                "Impossible amount of frontend allocation"
             );
@@ -236,16 +236,16 @@ namespace Langulus::Fractalloc
    ///   @param previous - the previous memory entry                          
    ///   @return the reallocated memory entry, or nullptr if out of memory    
    Allocation* Allocator::Reallocate(Offset size, Allocation* previous) IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes, previous,
+      LglsAssumeDev(previous,
          "Reallocating nullptr");
       [[maybe_unused]] const auto as = previous->GetAllocatedSize();
-      LANGULUS_ASSUME(DevAssumes, size != as,
+      LglsAssumeDev(size != as,
          "Reallocation suboptimal - size is same as previous");
-      LANGULUS_ASSUME(DevAssumes, size,
+      LglsAssumeDev(size,
          "Zero reallocation is not allowed");
-      LANGULUS_ASSUME(DevAssumes, previous->mReferences,
+      LglsAssumeDev(previous->mReferences,
          "Reallocating an unused allocation");
-      LANGULUS_ASSUME(DevAssumes, previous->mReferences == 1,
+      LglsAssumeDev(previous->mReferences == 1,
          "Reallocating allocation used from multiple places");
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)
@@ -258,7 +258,7 @@ namespace Langulus::Fractalloc
             auto& stats = Instance.mStatistics;
             stats.mBytesAllocatedByFrontend -= oldSize;
             stats.mBytesAllocatedByFrontend += previous->GetTotalSize();
-            LANGULUS_ASSUME(DevAssumes,
+            LglsAssumeDev(
                stats.mBytesAllocatedByFrontend <= stats.mBytesAllocatedByBackend,
                "Impossible amount of frontend allocation"
             );
@@ -280,13 +280,13 @@ namespace Langulus::Fractalloc
    ///   @attention doesn't call any destructors                              
    ///   @param entry - the memory entry to deallocate                        
    void Allocator::Deallocate(Allocation* entry) IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes, entry,
+      LglsAssumeDev(entry,
          "Deallocating nullptr");
-      LANGULUS_ASSUME(DevAssumes, entry->GetAllocatedSize(),
+      LglsAssumeDev(entry->GetAllocatedSize(),
          "Deallocating an empty allocation");
-      LANGULUS_ASSUME(DevAssumes, entry->mReferences,
+      LglsAssumeDev(entry->mReferences,
          "Deallocating an unused allocation");
-      LANGULUS_ASSUME(DevAssumes, entry->mReferences == 1,
+      LglsAssumeDev(entry->mReferences == 1,
          "Deallocating an allocation used from multiple places");
 
       VERBOSE(
@@ -319,7 +319,7 @@ namespace Langulus::Fractalloc
    ///   @attention assumes pool is a valid pointer                           
    ///   @param pool - the pool to deallocate                                 
    void Allocator::DeallocatePool(Pool* pool) IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes, pool, "Nullptr provided");
+      LglsAssumeDev(pool, "Nullptr provided");
       ::std::free(pool->mHandle);
    }
 
@@ -594,7 +594,7 @@ namespace Langulus::Fractalloc
    ///   @param memory - memory pointer                                       
    ///   @return true if we own the memory                                    
    bool Allocator::CheckAuthority(DMeta hint, const void* memory) IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes, memory, "Nullptr provided");
+      LglsAssumeDev(memory, "Nullptr provided");
 
       // Scan the last pool that found something (hot region)           
       //TODO consider a whole stack of those?
@@ -694,7 +694,7 @@ namespace Langulus::Fractalloc
    
 #if LANGULUS_FEATURE(MEMORY_STATISTICS)
    bool Allocator::Statistics::operator == (const Statistics& rhs) const IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes,
+      LglsAssumeDev(
          mBytesAllocatedByFrontend <= mBytesAllocatedByBackend,
          "Impossible amount of frontend allocation"
       );
@@ -1003,7 +1003,7 @@ namespace Langulus::Fractalloc
    void Allocator::Statistics::AddPool(const Pool* pool) IF_UNSAFE(noexcept) {
       mBytesAllocatedByBackend += pool->GetTotalSize();
       mBytesAllocatedByFrontend += pool->GetAllocatedByFrontend();
-      LANGULUS_ASSUME(DevAssumes,
+      LglsAssumeDev(
          mBytesAllocatedByFrontend <= mBytesAllocatedByBackend,
          "Impossible amount of frontend allocation"
       );
@@ -1014,7 +1014,7 @@ namespace Langulus::Fractalloc
    /// Account for a removed pool                                             
    ///   @param pool - the pool to account for                                
    void Allocator::Statistics::DelPool(const Pool* pool) IF_UNSAFE(noexcept) {
-      LANGULUS_ASSUME(DevAssumes,
+      LglsAssumeDev(
          mBytesAllocatedByBackend >= pool->GetTotalSize(),
          "Impossible amount of backend allocation"
       );
