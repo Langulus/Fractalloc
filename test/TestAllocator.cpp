@@ -51,7 +51,7 @@ SCENARIO("Testing CountLeadingZeroes calls", "[allocator]") {
 
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Offset); ++i) {
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(size_t); ++i) {
       REQUIRE(CountLeadingZeroes(numbers[i]) == static_cast<int>(results[i]));
    }
 }
@@ -73,7 +73,7 @@ SCENARIO("Testing CountTrailingZeroes calls", "[allocator]") {
 
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Offset); ++i) {
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(size_t); ++i) {
       REQUIRE(CountTrailingZeroes(numbers[i]) == static_cast<int>(results[i]));
    }
 }
@@ -133,15 +133,15 @@ TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]",
 }
 
 SCENARIO("Testing FastLog2 calls", "[allocator]") {
-   const Offset numbers[] {
+   const size_t numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
    };
-   const Offset results[] {
+   const size_t results[] {
       0, 0, 1, 1, 2, 2, 2,  3,  4,  6,  6,   6,   7
    };
    static_assert(sizeof(numbers) == sizeof(results), "Oops");
 
-   for (unsigned i = 0; i < sizeof(numbers) / sizeof(Offset); ++i) {
+   for (unsigned i = 0; i < sizeof(numbers) / sizeof(size_t); ++i) {
       REQUIRE(Fractalloc::Inner::FastLog2(numbers[i]) == results[i]);
    }
 }
@@ -396,13 +396,13 @@ SCENARIO("Testing pool functions", "[allocator]") {
          REQUIRE(pool);
 
          // Fill up
-         for (Count i = 0; i < pool->GetMaxEntries(); ++i) {
+         for (size_t i = 0; i < pool->GetMaxEntries(); ++i) {
             auto entry = pool->Allocate(5);
             REQUIRE(entry);
             entry->Keep(i);
 
             // Fill the entire entry to check for heap corruptions
-            for (Offset i2 = 0; i2 < entry->GetAllocatedSize(); ++i2) {
+            for (size_t i2 = 0; i2 < entry->GetAllocatedSize(); ++i2) {
                entry->GetBlockStart()[i2] = {};
             }
          }
@@ -418,7 +418,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
 
          REQUIRE(pool->GetAllocatedByFrontend() == pool->GetMaxEntries() * Allocation::GetNewAllocationSize(5));
          REQUIRE(pool->GetMaxEntries() == full / smallest);
-         for (Count i = 0; i < pool->GetMaxEntries(); ++i) {
+         for (size_t i = 0; i < pool->GetMaxEntries(); ++i) {
             auto entry = pool->AllocationFromIndex(i);
             REQUIRE(pool->Contains(entry));
             REQUIRE(entry->GetUses() == 1 + i);
@@ -473,11 +473,11 @@ SCENARIO("Testing allocator functions", "[allocator]") {
          REQUIRE(entry->GetSize() % Alignment == 0);
          REQUIRE(entry->GetBlockStart() == reinterpret_cast<Byte*>(entry) + entry->GetSize());
          REQUIRE(entry->GetUses() == 1);
-         for (Offset i = 0; i < 512; ++i) {
+         for (size_t i = 0; i < 512; ++i) {
             auto p = entry->GetBlockStart() + i;
             REQUIRE(entry->Contains(p));
          }
-         for (Offset i = 512; i < 513; ++i) {
+         for (size_t i = 512; i < 513; ++i) {
             auto p = entry->GetBlockStart() + i;
             REQUIRE_FALSE(entry->Contains(p));
          }

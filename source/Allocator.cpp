@@ -130,7 +130,7 @@ namespace Langulus::Fractalloc
       LglsAssumeDevAndOptimize(pool_bank, "Pool bank should always be valid");
       
       //	Attempt to place allocation in the chosen chain                
-      uint pool_misses = 0;
+      unsigned pool_misses = 0;
       Allocation* entry = nullptr;
       auto pool = pool_bank->unindexed;
       while (pool) {

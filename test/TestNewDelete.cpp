@@ -80,7 +80,7 @@ SCENARIO("Testing new/delete operators", "[new][delete]") {
 
       WHEN("Deallocate and reallocate memory repeatedly") {
          const auto initialState = Allocator::GetStatistics();
-         for (Count i = 0; i < 10000u; ++i) {
+         for (size_t i = 0; i < 10000u; ++i) {
             delete[] a;
             a = new int[1024];
          }
