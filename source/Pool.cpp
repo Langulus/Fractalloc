@@ -5,7 +5,7 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Allocator.hpp"
+#include <Langulus/Fractalloc/Allocator.hpp>
 
 #if not LANGULUS_FEATURE(MANAGED_MEMORY)
    #error "This file shouldn't be included if MANAGED_MEMORY is disabled"
@@ -19,7 +19,23 @@
 
 
 namespace Langulus::Fractalloc
-{   
+{
+   /// Align a value to a given alignment                                     
+   template<class T, class A>
+   constexpr T Align(T valueToAlign, A alignment) {
+      if constexpr (::std::is_pointer_v<T>) {
+         const uintptr_t align = static_cast<uintptr_t>(alignment); 
+         const uintptr_t as_bytes = reinterpret_cast<uintptr_t>(valueToAlign);
+         const uintptr_t r = as_bytes % align;
+         return reinterpret_cast<T>(r ? as_bytes + (align - r) : as_bytes);         
+      }
+      else {
+         const T align = static_cast<T>(alignment); 
+         const T r = valueToAlign % align;
+         return r ? valueToAlign + (align - r) : valueToAlign;
+      }
+   }
+
    /// Get least significant bit                                              
    /// https://stackoverflow.com/questions/757059                             
    LANGULUS(ALWAYS_INLINED)

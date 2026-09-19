@@ -5,7 +5,7 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Allocator.hpp"
+#include <Langulus/Fractalloc/Allocator.hpp>
 
 #if 0
    #include <Langulus/Logger/EnableVerbose.hpp>

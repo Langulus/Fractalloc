@@ -18,7 +18,9 @@ add_langulus_library(LangulusFractalloc
    SOURCES  $<TARGET_OBJECTS:LangulusLogger>
             $<TARGET_OBJECTS:LangulusRTTI>
             $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_OBJECTS:LangulusPercist>>
-            source/Allocator.cpp
+            $<$<BOOL:${LANGULUS_OPTION_MANAGED_MEMORY}>:source/Allocator.cpp>
+            $<$<BOOL:${LANGULUS_OPTION_MANAGED_MEMORY}>:source/Pool.cpp>
+            $<$<BOOL:${LANGULUS_OPTION_MEMORY_STATISTICS}>:source/Statistics.cpp>
 )
 
 target_include_directories(LangulusFractalloc
