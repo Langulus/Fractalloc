@@ -24,6 +24,7 @@ namespace Langulus::Fractalloc
 {
    struct Allocation;
    struct PoolBank;
+   struct Statistics;
    
    ///                                                                        
    ///   Memory pool                                                          
@@ -34,7 +35,9 @@ namespace Langulus::Fractalloc
    struct Pool {
    protected:
       friend struct Allocator;
+      friend struct Allocation;
       friend struct PoolBank;
+      friend struct Statistics;
       
       // A chain of freed entries in the range [0; mEntries)            
       Allocation* mLastFreed = nullptr;
@@ -88,15 +91,6 @@ namespace Langulus::Fractalloc
       Pool(const Pool&) = delete;
       Pool(Pool&&) = delete;
 
-      Pool(
-         pot_t data_alignment,
-         pot_t data_min_alloc,
-         pot_t pool_alignment,
-         pot_t client_size
-      ) assumptious;
-
-      static size_t Cost(pot_t dataAlignment, pot_t dataMinAlloc, pot_t) noexcept;
-
       /// Get the pool ID                                                     
       auto GetID() const noexcept {
          return mID;
@@ -113,11 +107,6 @@ namespace Langulus::Fractalloc
          return mThresholdMin;
       }
       
-      /// Get the start of the usable memory for the pool                     
-      auto GetClientData() const noexcept -> uint8_t* {
-         return mClientData;
-      }
-
       /// Get the total size of the pool, including this instance and padding 
       ///   @return the size in bytes                                         
       auto GetTotalSize() const noexcept -> size_t {
@@ -141,12 +130,6 @@ namespace Langulus::Fractalloc
       
       auto GetLastFreedEntry() const noexcept -> Allocation* {
          return mLastFreed;
-      }
-
-      /// Get the bytes reserved for the bool                                 
-      ///   @return bytes allocated for the pool                              
-      auto GetAllocatedByBackend() const noexcept -> pot_t {
-         return mAllocatedByBackend;
       }
 
       /// Get the used number of bytes - the sum of all allocations           
@@ -205,6 +188,27 @@ namespace Langulus::Fractalloc
       void Null();
       void Touch();
       void Trim();
+
+   public:
+      static size_t Cost(pot_t dataAlignment, pot_t dataMinAlloc, pot_t) noexcept;
+
+      Pool(
+         pot_t data_alignment,
+         pot_t data_min_alloc,
+         pot_t pool_alignment,
+         pot_t client_size
+      ) assumptious;
+
+      /// Get the start of the usable memory for the pool                     
+      auto GetClientData() const noexcept -> uint8_t* {
+         return mClientData;
+      }
+
+      /// Get the bytes reserved for the bool                                 
+      ///   @return bytes allocated for the pool                              
+      auto GetAllocatedByBackend() const noexcept -> pot_t {
+         return mAllocatedByBackend;
+      }
    };
    
    /// Fast log2                                                              
