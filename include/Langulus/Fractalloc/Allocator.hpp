@@ -62,7 +62,7 @@ namespace Langulus::Fractalloc
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          LANGULUS_API(FRACTALLOC)
-         static size_t CheckBoundary(const Token&) noexcept;
+         static size_t CheckBoundary(Token const&) noexcept;
       #endif
 
       #if LANGULUS_FEATURE(MEMORY_STATISTICS)

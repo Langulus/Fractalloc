@@ -340,7 +340,7 @@ namespace Langulus::Fractalloc
    /// to be unloaded. Best used after a call to CollectGarbage.              
    ///   @param boundary the boundary name                                    
    ///   @return the number of pools                                          
-   size_t Allocator::CheckBoundary(const Token& boundary) noexcept {
+   size_t Allocator::CheckBoundary(Token const& boundary) noexcept {
       const ::std::string b {boundary};
       size_t count = 0;
       for (const auto& type : gTypePoolChain) {
@@ -671,7 +671,7 @@ namespace Langulus::Fractalloc
 
       if (stats.mTraitDefinitions != with.mTraitDefinitions) {
          Logger::Info(Logger::Purple,
-            "Trait definitions difference: ",
+            "Tag definitions difference: ",
             static_cast<int>(stats.mTraitDefinitions) - static_cast<int>(with.mTraitDefinitions)
          );
       }
