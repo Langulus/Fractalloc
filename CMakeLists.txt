@@ -32,7 +32,7 @@ target_include_directories(LangulusFractalloc
 
 target_link_libraries(LangulusFractalloc
    PUBLIC   LangulusCore
-            $<$<BOOL:${LANGULUS_OPTION_LOGGING}>:fmt>
+            $<TARGET_PROPERTY:LangulusLogger,INTERFACE_LINK_LIBRARIES>
 )
 
 target_compile_definitions(LangulusFractalloc
