@@ -87,9 +87,9 @@ namespace Langulus::Fractalloc
       const pot_t mMaxEntries;
 
    IF_LANGULUS_TESTING(public:)
-      Pool() = delete;
-      Pool(const Pool&) = delete;
-      Pool(Pool&&) = delete;
+      Pool()            = delete("Pools are producible only by the allocator");
+      Pool(Pool const&) = delete("Pools are producible only by the allocator");
+      Pool(Pool&&)      = delete("Pools are producible only by the allocator");
 
       /// Get the pool ID                                                     
       auto GetID() const noexcept {

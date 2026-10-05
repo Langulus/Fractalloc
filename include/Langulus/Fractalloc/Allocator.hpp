@@ -34,8 +34,6 @@ namespace Langulus::Fractalloc
    ///                                                                        
    /// Basically an overcomplicated wrapper for malloc/free. Manages pools.   
    struct Allocator {
-      Allocator() = delete;
-      
       LANGULUS_API(FRACTALLOC)
       static auto Allocate(DMeta, pot_t) assumptious -> Allocation*;
       

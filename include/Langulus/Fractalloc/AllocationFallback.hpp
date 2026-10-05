@@ -39,9 +39,9 @@ namespace Langulus::Unmanaged
       pot_t mAlignment;
 
    public:
-      Allocation() = delete;
-      Allocation(const Allocation&) = delete;
-      Allocation(Allocation&&) = delete;
+      Allocation()                  = delete("These allocations are only producible by the fallback allocator");
+      Allocation(Allocation const&) = delete("These allocations are only producible by the fallback allocator");
+      Allocation(Allocation&&)      = delete("These allocations are only producible by the fallback allocator");
 
       /// Initialize an allocation                                            
       ///   @param alignment data alignment                                   

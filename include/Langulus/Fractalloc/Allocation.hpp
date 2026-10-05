@@ -47,9 +47,9 @@ namespace Langulus::Fractalloc
       };
 
    public:
-      Allocation() = delete;
-      Allocation(const Allocation&) = delete;
-      Allocation(Allocation&&) = delete;
+      Allocation()                  = delete("Allocations are only producible by a pool");
+      Allocation(Allocation const&) = delete("Allocations are only producible by a pool");
+      Allocation(Allocation&&)      = delete("Allocations are only producible by a pool");
 
       /// Initialize an allocation                                            
       ///   @param size the number of allocated bytes                         
