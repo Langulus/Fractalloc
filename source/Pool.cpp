@@ -12,11 +12,8 @@
    #error "This file shouldn't be included if MANAGED_MEMORY is disabled"
 #endif
 
-#if 0
-   #include <Langulus/Logger/EnableVerbose.hpp>
-#else
-   #include <Langulus/Logger/NoVerbose.hpp>
-#endif
+#define LglsVerboseEnabled 0
+#include <Langulus/Logger/ToggleVerbose.hpp>
 
 
 namespace Langulus::Fractalloc
@@ -126,9 +123,9 @@ namespace Langulus::Fractalloc
       if (mLastFreed) {
          // Recycle entries                                             
          newEntry = mLastFreed;
-         LglsVerbose("Used last freed entry: ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "Used last freed entry: ", Logger::Hex(mLastFreed));
          mLastFreed = mLastFreed->GetNextFreeEntry();
-         LglsVerbose("Next freed entry is: ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "Next freed entry is: ", Logger::Hex(mLastFreed));
          new (newEntry) Allocation {bytes, mPoolAlignment};
 
          if (bytes > mBiggestEntry)
@@ -186,9 +183,9 @@ namespace Langulus::Fractalloc
       if (mLastFreed and IndexFromAllocation(mLastFreed) <= entry_budget) {
          // Recycle entries                                             
          newEntry = mLastFreed;
-         LglsVerbose("Used last freed entry: ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "Used last freed entry: ", Logger::Hex(mLastFreed));
          mLastFreed = mLastFreed->GetNextFreeEntry();
-         LglsVerbose("Next freed entry is: ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "Next freed entry is: ", Logger::Hex(mLastFreed));
          new (newEntry) Allocation {bytes, mPoolAlignment};
 
          if (bytes > mBiggestEntry)
@@ -308,7 +305,7 @@ namespace Langulus::Fractalloc
          // Reset the entire pool.                                      
          mThresholdMax = mAllocatedByBackend;
          mBiggestEntry = mThresholdMin;
-         LglsVerbose("Freed entry chain reset completely - all entries were deallocated");
+         LglsVerbose(Info, "Freed entry chain reset completely - all entries were deallocated");
          mLastFreed = nullptr;
          mNextEntry = 0;
          mDistribution[size.bit] = 0;
@@ -328,9 +325,9 @@ namespace Langulus::Fractalloc
          }
          else entry->ResetNextFreeEntry();
          
-         LglsVerbose("New entry was freed, previous last freed was: ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "New entry was freed, previous last freed was: ", Logger::Hex(mLastFreed));
          mLastFreed = entry;
-         LglsVerbose("New last freed is: ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "New last freed is: ", Logger::Hex(mLastFreed));
          LglsAssumeDev(mValidEntries > 1, "Incorrect mValidEntries");
          --mValidEntries;
 
@@ -414,9 +411,9 @@ namespace Langulus::Fractalloc
          //auto entry = AllocationFromIndex(trimmed);
          while (trimmed) {
             auto entry = AllocationFromIndex(trimmed);
-            LglsVerboseScoped("Trimming: ", Logger::Hex(entry));
+            LglsVerboseScoped(Info, "Trimming: ", Logger::Hex(entry));
             if (entry->GetUses()) {
-               LglsVerbose("Trimming ceased - valid entry encountered");
+               LglsVerbose(Info, "Trimming ceased - valid entry encountered");
                break;
             }
          
@@ -429,11 +426,11 @@ namespace Langulus::Fractalloc
                // Level up, so wrap around back to the ending entry     
                //entry_gap <<= 1u;
                //entry = mAllocationData + max_entries - entry_gap;
-               LglsVerbose("Trimmed and wrapped around");
+               LglsVerbose(Info, "Trimmed and wrapped around");
             }
             else {
                //entry -= entry_gap;
-               LglsVerbose("Trimmed");
+               LglsVerbose(Info, "Trimmed");
             }
 
             --trimmed;
@@ -465,16 +462,16 @@ namespace Langulus::Fractalloc
          return index < mNextEntry;
       };
 
-      LglsVerboseScoped("Remapping free chain, starting with: ", Logger::Hex(mLastFreed));
+      LglsVerboseScoped(Info, "Remapping free chain, starting with: ", Logger::Hex(mLastFreed));
       while (mLastFreed and not is_in_range(mLastFreed)) {
-         LglsVerboseScoped(Logger::Hex(mLastFreed),
+         LglsVerboseScoped(Info, Logger::Hex(mLastFreed),
             " fell out of range and is getting replaced...");
          mLastFreed = mLastFreed->GetNextFreeEntry();
-         LglsVerbose("with ", Logger::Hex(mLastFreed));
+         LglsVerbose(Info, "with ", Logger::Hex(mLastFreed));
       }
 
       if (mLastFreed) {
-         LglsVerboseScoped("Patching up the free chain, starting with: ", Logger::Hex(mLastFreed));
+         LglsVerboseScoped(Info, "Patching up the free chain, starting with: ", Logger::Hex(mLastFreed));
 
          auto last_valid_freed = mLastFreed;
          auto freed = mLastFreed->GetNextFreeEntry();
@@ -490,12 +487,12 @@ namespace Langulus::Fractalloc
                   "Pool free chain integrity failure");
                IF_SAFE(mask.insert(freed));
 
-               LglsVerbose(Logger::Hex(last_valid_freed), " -> ", Logger::Hex(freed));
+               LglsVerbose(Info, Logger::Hex(last_valid_freed), " -> ", Logger::Hex(freed));
                last_valid_freed->SetNextFreeEntry(freed);
                last_valid_freed = freed;
             }
             else {
-               LglsVerbose(Logger::Hex(freed), " fell out of range, skipping to: ",
+               LglsVerbose(Info, Logger::Hex(freed), " fell out of range, skipping to: ",
                   Logger::Hex(freed->GetNextFreeEntry()));
             }
 
@@ -503,7 +500,7 @@ namespace Langulus::Fractalloc
          }
          
          last_valid_freed->ResetNextFreeEntry();
-         LglsVerbose("Free chain finalized with: ", Logger::Hex(last_valid_freed));
+         LglsVerbose(Info, "Free chain finalized with: ", Logger::Hex(last_valid_freed));
          LglsAssumeDev(mask.size() == mNextEntry - mValidEntries,
             "Pool free chain count mismatch: ",
             mask.size(), " != ", mNextEntry - mValidEntries

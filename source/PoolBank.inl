@@ -78,7 +78,7 @@ namespace Langulus::Fractalloc
 
             // If reached, the pool is not in use and is deleted        
             const auto next = pool->mNext;
-            LglsVerbose(
+            LglsVerbose(Info, 
                "Fractalloc: ", Logger::DarkCyan, "Typed pool ", Logger::Hex(pool),
                " of size ", Logger::Size {static_cast<size_t>(pool->GetAllocatedByBackend())},
                " was deallocated"

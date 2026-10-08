@@ -7,11 +7,8 @@
 ///                                                                           
 #include <Langulus/Fractalloc/Allocator.hpp>
 
-#if 0
-   #include <Langulus/Logger/EnableVerbose.hpp>
-#else
-   #include <Langulus/Logger/NoVerbose.hpp>
-#endif
+#define LglsVerboseEnabled 0
+#include <Langulus/Logger/ToggleVerbose.hpp>
 
 
 namespace Langulus::Fractalloc

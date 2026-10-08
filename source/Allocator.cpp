@@ -10,12 +10,8 @@
 #include <map>
 #include <ranges>
 
-#if 0
-   #include <Langulus/Logger/EnableVerbose.hpp>
-#else
-   #include <Langulus/Logger/NoVerbose.hpp>
-#endif
-
+#define LglsVerboseEnabled 0
+#include <Langulus/Logger/ToggleVerbose.hpp>
 #include "PoolBank.inl"
 
 
@@ -151,7 +147,7 @@ namespace Langulus::Fractalloc
                "Impossible amount of frontend allocation"
             );
          #endif
-         LglsVerbose(
+         LglsVerbose(Info, 
             "Fractalloc: ", Logger::Green, "Allocation ", Logger::Hex(entry),
             " was allocated with ", Logger::Size {static_cast<size_t>(entry->GetSize())},
             " (associated type `", meta.GetName(), "`)"
@@ -169,14 +165,14 @@ namespace Langulus::Fractalloc
       if (not pool)
          return nullptr;
 
-      LglsVerbose(
+      LglsVerbose(Info, 
          "Fractalloc: ", Logger::Cyan, "New pool ", Logger::Hex(pool),
          " of size ", Logger::Size {static_cast<size_t>(pool->GetAllocatedByBackend())}
       );
 
       // Place allocation in the new pool. This is guaranteed to work.  
       entry = pool->Allocate(size);
-      LglsVerbose(
+      LglsVerbose(Info, 
          "Fractalloc: ", Logger::Green, "Allocation ", Logger::Hex(entry),
          " was allocated with ", Logger::Size {static_cast<size_t>(entry->GetSize())},
          " (associated type `", meta.GetName(), "`)"
@@ -223,7 +219,7 @@ namespace Langulus::Fractalloc
             );
          #endif
 
-         LglsVerbose(
+         LglsVerbose(Info, 
             "Fractalloc: ", Logger::Yellow, "Allocation ", Logger::Hex(previous),
             " was reallocated from ", Logger::Size {oldSize}, " to ",
             Logger::Size {static_cast<size_t>(previous->GetSize())},
@@ -249,7 +245,7 @@ namespace Langulus::Fractalloc
          "Deallocating an allocation used from multiple places");
 
       [[maybe_unused]] const auto backupSize = static_cast<size_t>(entry->GetSize());
-      LglsVerbose(
+      LglsVerbose(Info, 
          "Fractalloc: ", Logger::Red, "Allocation ", Logger::Hex(entry),
          " of size ", Logger::Size {backupSize}, " was deallocated (had ",
          entry->mReferences, " references)"
@@ -490,7 +486,7 @@ namespace Langulus::Fractalloc
       if (not new_pool)
          return nullptr;
 
-      LglsVerbose(
+      LglsVerbose(Info, 
          "Fractalloc: ", Logger::Cyan, "New pool ", Logger::Hex(new_pool),
          " of size ", Logger::Size {static_cast<size_t>(new_pool->GetAllocatedByBackend())}
       );
@@ -539,7 +535,7 @@ namespace Langulus::Fractalloc
             );
          #endif
 
-         LglsVerbose(
+         LglsVerbose(Info, 
             "Fractalloc: ", Logger::Yellow, "Allocation ", Logger::Hex(previous),
             " was reallocated from ", Logger::Size {oldSize}, " to ",
             Logger::Size {static_cast<size_t>(previous->GetSize())}
