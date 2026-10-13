@@ -72,7 +72,7 @@ namespace Langulus::Fractalloc
    ///   @param type the pooled type                                          
    ///   @param size the number of client bytes to allocate                   
    ///   @return a newly allocated memory that is correctly aligned           
-   Pool* AlignedAllocate(const DMeta& type, pot_t size) assumptious {
+   Pool* AlignedAllocate(DMeta const& type, pot_t size) assumptious {
       LglsAssumeDev((bool) type,
          "Invalid type");
       LglsAssumeDev(size >= type.GetSize(),
