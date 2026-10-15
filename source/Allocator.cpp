@@ -339,7 +339,7 @@ namespace Langulus::Fractalloc
    size_t Allocator::CheckBoundary(Token const& boundary) noexcept {
       const ::std::string b {boundary};
       size_t count = 0;
-      for (const auto& type : gTypePoolChain) {
+      for (auto const& type : gTypePoolChain) {
          if (type.first.GetBoundaries().contains(b))
             count += type.second.indexed.size();
       }

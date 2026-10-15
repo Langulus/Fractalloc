@@ -36,7 +36,7 @@ namespace Langulus::Fractalloc
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Number of registered meta datas                             
          size_t mDataDefinitions {};
-         // Number of registered meta traits                            
+         // Number of registered meta tags                            
          size_t mTraitDefinitions {};
          // Number of registered meta verbs                             
          size_t mVerbDefinitions {};
