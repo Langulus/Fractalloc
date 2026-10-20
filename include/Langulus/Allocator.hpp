@@ -79,3 +79,58 @@ namespace Langulus
    /// Can be a packed pointer                                                
    using EntryPtr = AllocationPtr const*;
 }
+
+namespace Langulus::RTTI
+{
+   /// A rudimentary non-owning data block                                    
+   struct Block {
+      void*  data = nullptr;
+      DMeta  type;
+      size_t count = 0;
+
+      /// Dereference a pointer a number of times                             
+      Block GetDense(size_t count = 1) const assumptious {
+         if (not type.IsSparse() or count <= 0)
+            return *this;
+
+         // Check if origin type is complete before attempting anything 
+         if (count >= type.GetIndirections()) {
+            LglsAssert(type.GetOrigin(),
+               "Trying to interface incomplete data `", type, "` as dense");
+         }
+
+         auto T = type;
+         auto nextT = T.GetDeptr();
+         void* heap = data;
+         while (count and T.IsSparse()) {            
+            if (nextT.IsSparse()) {
+               // Pointer T -> Pointer nextT                            
+               T.GetDereffer()(heap, &heap);
+               T = nextT;
+               nextT = T.GetDeptr();
+               --count;
+            }
+            else break;
+         }
+         return {UnpackPointer(T, nextT, heap), nextT, 1};
+      }
+
+      /// Get the most concrete resolved type                                 
+      Block GetResolved() const assumptious {
+         if (not type.IsSparse())
+            return *this;
+      
+         const auto resolver = type.GetResolver();
+         if (resolver)
+            return resolver(GetDense().data);
+         else
+            return GetDense();
+      }
+
+      Block& operator += (size_t offset) assumptious {
+         LglsAssumeDev(type);
+         data = static_cast<uint8_t*>(data) + offset * type.GetSize();
+         return *this;
+      }
+   };
+}
