@@ -89,8 +89,8 @@ namespace Langulus::RTTI
       size_t count = 0;
 
       /// Dereference a pointer a number of times                             
-      Block GetDense(size_t count = 1) const assumptious {
-         if (not type.IsSparse() or count <= 0)
+      Block GetDense(size_t count = -1) const assumptious {
+         if (not type.IsSparse() or not count)
             return *this;
 
          // Check if origin type is complete before attempting anything 
@@ -127,6 +127,20 @@ namespace Langulus::RTTI
             return GetDense();
       }
 
+      /// Get a subblock representing a member inside the first element       
+      Block GetMember(RTTI::TMeta tag, RTTI::DMeta type, size_t &offset) assumptious {
+         auto dense = GetDense();
+         auto member = dense.type.GetMember(tag, type, offset);
+         return {member->member(dense.data), DMeta(member->type()), member->extent};
+      }
+
+      Block GetMember(RTTI::TMeta tag, RTTI::DMeta type, size_t &offset) const assumptious {
+         auto dense = GetDense();
+         auto member = dense.type.GetMember(tag, type, offset);
+         return {member->member(dense.data), DMeta(member->type()).AddConst(), member->extent};
+      }
+
+      /// Offset the memory pointer according to the element size * offset    
       Block& operator += (size_t offset) assumptious {
          LglsAssumeDev(type);
          data = static_cast<uint8_t*>(data) + offset * type.GetSize();
