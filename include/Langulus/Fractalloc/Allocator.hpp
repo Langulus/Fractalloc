@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include <Langulus/Core.hpp>
-#include <Langulus/MetaOf.hpp>
+#include <Langulus/RTTI/MetaData.hpp>
 #include "Allocation.hpp"
 
 #if not LANGULUS_FEATURE(MANAGED_MEMORY)
