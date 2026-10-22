@@ -88,6 +88,8 @@ namespace Langulus::RTTI
       DMeta  type;
       size_t count = 0;
 
+      explicit operator bool () const noexcept { return count != 0; }
+
       /// Dereference a pointer a number of times                             
       Block GetDense(size_t count = -1) const assumptious {
          if (not type.IsSparse() or not count)
