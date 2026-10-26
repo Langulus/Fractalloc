@@ -249,8 +249,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                   if (i)
                      pool->Deallocate(i);
                   else {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because the pool got full - use a bigger pool");
+                     throw Exception("The test is invalid, because the pool got full - use a bigger pool");
                   }
                }
             };
@@ -265,8 +264,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                   if (i)
                      ::std::free(i);
                   else {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because malloc returned a zero");
+                     throw Exception("The test is invalid, because malloc returned a zero");
                   }
                }
             };
@@ -281,8 +279,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                   if (i)
                      pool->Deallocate(i);
                   else {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because the pool got full - use a bigger pool");
+                     throw Exception("The test is invalid, because the pool got full - use a bigger pool");
                   }
                }
             };
@@ -297,8 +294,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                   if (i)
                      ::std::free(i);
                   else {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because malloc returned a zero");
+                     throw Exception("The test is invalid, because malloc returned a zero");
                   }
                }
             };
@@ -308,8 +304,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                for (auto& i : storage) {
                   i = pool->Allocate(32);
                   if (!i) {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because the pool got full - use a bigger pool");
+                     throw Exception("The test is invalid, because the pool got full - use a bigger pool");
                   }
                }
 
@@ -329,8 +324,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                for (auto& i : storage) {
                   i = ::std::malloc(32);
                   if (!i) {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because malloc returned a zero");
+                     throw Exception("The test is invalid, because malloc returned a zero");
                   }
                }
 
@@ -350,8 +344,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                for (auto& i : storage) {
                   i = pool->Allocate(5);
                   if (!i) {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because the pool got full - use a bigger pool");
+                     throw Exception("The test is invalid, because the pool got full - use a bigger pool");
                   }
                }
 
@@ -371,8 +364,7 @@ SCENARIO("Testing pool functions", "[allocator]") {
                for (auto& i : storage) {
                   i = ::std::malloc(5);
                   if (!i) {
-                     LANGULUS_THROW(Deallocate,
-                        "The test is invalid, because malloc returned a zero");
+                     throw Exception("The test is invalid, because malloc returned a zero");
                   }
                }
 
@@ -495,7 +487,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                   if (i)
                      Allocator::Deallocate(i);
                   else
-                     LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
+                     throw Exception("The test is invalid, because memory got full");
                }
             };
 
@@ -509,7 +501,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                   if (i)
                      ::std::free(i);
                   else
-                     LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
+                     throw Exception("The test is invalid, because memory got full");
                }
             };
 
@@ -523,7 +515,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                   if (i)
                      Allocator::Deallocate(i);
                   else
-                     LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
+                     throw Exception("The test is invalid, because memory got full");
                }
             };
 
@@ -537,7 +529,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                   if (i)
                      ::std::free(i);
                   else
-                     LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
+                     throw Exception("The test is invalid, because memory got full");
                }
             };
 
@@ -551,7 +543,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                   if (i)
                      Allocator::Deallocate(i);
                   else
-                     LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
+                     throw Exception("The test is invalid, because memory got full");
                }
             };
 
@@ -565,7 +557,7 @@ SCENARIO("Testing allocator functions", "[allocator]") {
                   if (i)
                      ::std::free(i);
                   else
-                     LANGULUS_THROW(Deallocate, "The test is invalid, because memory got full");
+                     throw Exception("The test is invalid, because memory got full");
                }
             };
          #endif
