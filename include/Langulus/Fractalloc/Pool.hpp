@@ -214,7 +214,7 @@ namespace Langulus::Fractalloc
    /// Fast log2                                                              
    /// https://stackoverflow.com/questions/11376288                           
    LANGULUS(ALWAYS_INLINED)
-   constexpr size_t FastLog2(const size_t x) noexcept {
+   constexpr size_t FastLog2(size_t const x) noexcept {
       if (x < 2)
          return 0;
       return size_t {8 * sizeof(size_t)} - ::std::countl_zero(x) - size_t {1};

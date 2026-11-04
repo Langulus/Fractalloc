@@ -80,10 +80,10 @@ namespace Langulus::Fractalloc
       
       const pot_t  data_align = type.GetAlignment();
       const pot_t  data_minal = type.GetMinAllocation();
-      const size_t size_int = static_cast<size_t>(size);
-      const size_t pool_cost = Pool::Cost(data_align, data_minal, size);
-      const size_t pool_alignment = ::std::bit_ceil(pool_cost);
-      const size_t backendSize = pool_cost + size_int;
+      size_t const size_int = static_cast<size_t>(size);
+      size_t const pool_cost = Pool::Cost(data_align, data_minal, size);
+      size_t const pool_alignment = ::std::bit_ceil(pool_cost);
+      size_t const backendSize = pool_cost + size_int;
       #if LANGULUS_COMPILER(MSVC) or LANGULUS_COMPILER(CLANG_CL)
          const auto pool = _aligned_malloc(backendSize, pool_alignment);
       #else
@@ -445,8 +445,8 @@ namespace Langulus::Fractalloc
 
       //	Attempt to place allocation in the chosen chain                
       LglsAssumeDevAndOptimize(pool_bank, "Pool bank should always be valid");
-      const size_t max_pool_budget = (1u << spec.PoolBits) - 1u;
-      const size_t max_entry_budget = (1u << spec.EntryBits) - 1u;
+      size_t const max_pool_budget = (1u << spec.PoolBits) - 1u;
+      size_t const max_entry_budget = (1u << spec.EntryBits) - 1u;
       size_t pool_misses = 1;
       Allocation* entry = nullptr;
       for (auto& p : pool_bank->indexed) {
@@ -561,7 +561,7 @@ namespace Langulus::Fractalloc
          return reinterpret_cast<void*>(packed);
 
       auto e = FindPackedPointer(spec, deptr_type, packed);
-      const size_t elementId = packed & ((1u << spec.OffsetBits) - 1u);
+      size_t const elementId = packed & ((1u << spec.OffsetBits) - 1u);
       return e->GetBlockStart() + deptr_type.GetSize() * elementId;
    }
    
@@ -586,9 +586,9 @@ namespace Langulus::Fractalloc
       LglsAssumeDevAndOptimize(pool_bank, "Pool bank should always be valid");
 
       // Unpack indices and return raw pointer                          
-      const size_t poolId = packed >> (spec.EntryBits + spec.OffsetBits);
+      size_t const poolId = packed >> (spec.EntryBits + spec.OffsetBits);
       LglsAssumeDev(pool_bank->indexed.contains(poolId), "Invalid pool id");
-      const size_t entryId = (packed >> spec.OffsetBits) & ((1u << spec.EntryBits) - 1u);
+      size_t const entryId = (packed >> spec.OffsetBits) & ((1u << spec.EntryBits) - 1u);
       return pool_bank->indexed.at(poolId)->AllocationFromIndex(entryId);
    }
    

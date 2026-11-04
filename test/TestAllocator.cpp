@@ -133,10 +133,10 @@ TEMPLATE_TEST_CASE("Testing Roof2 calls", "[allocator]",
 }
 
 SCENARIO("Testing FastLog2 calls", "[allocator]") {
-   const size_t numbers[] {
+   size_t const numbers[] {
       0, 1, 2, 3, 4, 5, 6, 11, 16, 64, 99, 120, 128
    };
-   const size_t results[] {
+   size_t const results[] {
       0, 0, 1, 1, 2, 2, 2,  3,  4,  6,  6,   6,   7
    };
    static_assert(sizeof(numbers) == sizeof(results), "Oops");

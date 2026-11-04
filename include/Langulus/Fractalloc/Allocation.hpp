@@ -90,7 +90,7 @@ namespace Langulus::Fractalloc
 
          // Return a conventional pointer                               
          const auto pool = GetPool();
-         const size_t offset = this - pool->GetAllocationData();
+         size_t const offset = this - pool->GetAllocationData();
          return pool->GetClientData() + pool->GetMinAllocation() * offset;
       }
 

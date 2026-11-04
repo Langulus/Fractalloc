@@ -21,7 +21,7 @@ namespace Langulus::Fractalloc
    /// Get least significant bit                                              
    /// https://stackoverflow.com/questions/757059                             
    LANGULUS(ALWAYS_INLINED)
-   constexpr size_t LSB(const size_t n) noexcept {
+   constexpr size_t LSB(size_t const n) noexcept {
       static_assert(sizeof(size_t) == 4 or sizeof(size_t) == 8,
          "Unsupported size_t");
 
@@ -261,7 +261,7 @@ namespace Langulus::Fractalloc
       else {
          // We're shrinking the entry                                   
          // No checks required, just update the distribution            
-         const size_t removal = entry->GetSize() - bytes;
+         size_t const removal = entry->GetSize() - bytes;
          LglsAssumeDevAndOptimize(mAllocatedByFrontend >= removal,
             "mAllocatedByFrontend underflowed");
          mAllocatedByFrontend -= removal;
@@ -400,7 +400,7 @@ namespace Langulus::Fractalloc
 
       {
          LglsAssumeDev(IsInUse(), "Should have at least one valid entry");
-         //const size_t max_entries = static_cast<size_t>(mMaxEntries);
+         //size_t const max_entries = static_cast<size_t>(mMaxEntries);
 
          //                                                             
          // First pass checks how many entries we can trim              
@@ -454,7 +454,7 @@ namespace Langulus::Fractalloc
       //                                                                
       // Second pass patches up the free entry chain                    
       auto is_in_range = [this](Allocation const* a) {
-         const size_t i = a - mAllocationData;
+         size_t const i = a - mAllocationData;
          if (i == 0)
             return true;
          size_t i_clear_lsb = i & ~(i - 1u);
@@ -526,10 +526,10 @@ namespace Langulus::Fractalloc
       if (index == 0)
          return mAllocationData;
 
-      const size_t basePower = ::std::bit_width(index);
-      const size_t baselessIndex = index - (1u << (basePower - 1u));
-      const size_t levelIndex = (baselessIndex << 1u) + 1u;
-      const size_t levelSize = (1u << (mMaxEntries.bit - basePower));
+      size_t const basePower = ::std::bit_width(index);
+      size_t const baselessIndex = index - (1u << (basePower - 1u));
+      size_t const levelIndex = (baselessIndex << 1u) + 1u;
+      size_t const levelSize = (1u << (mMaxEntries.bit - basePower));
       return mAllocationData + levelIndex * levelSize;
    }
 
@@ -541,7 +541,7 @@ namespace Langulus::Fractalloc
       LglsAssumeDev(ContainsData(ptr), "Pointer is outside pool");
 
       // Credit goes to Yasen Vidolov                                   
-      const size_t i = static_cast<const uint8_t*>(ptr) - mClientData;
+      size_t const i = static_cast<const uint8_t*>(ptr) - mClientData;
       if (i < mThresholdMax or 0 == mNextEntry)
          return 0;
 
@@ -562,7 +562,7 @@ namespace Langulus::Fractalloc
       if (0 == mNextEntry or ptr == mAllocationData)
          return 0;
 
-      const size_t i = ptr - mAllocationData;
+      size_t const i = ptr - mAllocationData;
       size_t i_clear_lsb = i & ~(i - 1u);
       size_t index = ((mMaxEntries + i) / i_clear_lsb - 1u) >> 1u;
       while (index >= mNextEntry)
@@ -573,7 +573,7 @@ namespace Langulus::Fractalloc
    /// Get index above another index                                          
    ///   @param index                                                         
    ///   @return index above the given one                                    
-   size_t Pool::UpIndex(const size_t index) const noexcept {
+   size_t Pool::UpIndex(size_t const index) const noexcept {
       // Credit goes to Vladislav Penchev                               
       return index >> (LSB(index) + 1uz);
    }
