@@ -31,8 +31,7 @@ target_include_directories(LangulusFractalloc
 )
 
 target_link_libraries(LangulusFractalloc
-   PUBLIC   LangulusCore
-            $<TARGET_PROPERTY:LangulusLogger,INTERFACE_LINK_LIBRARIES>
+   PUBLIC   $<TARGET_PROPERTY:LangulusLogger,INTERFACE_LINK_LIBRARIES>
 )
 
 target_compile_definitions(LangulusFractalloc
