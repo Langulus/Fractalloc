@@ -46,8 +46,8 @@ TEST_CASE_TEMPLATE("Testing pool functions", TestType,
    
    using Fractalloc::Pool;
    const auto meta = MetaDataOf<TestType>();
-   constexpr size_t default_size = CT::GetMinPool<TestType>();
-   constexpr size_t min_alloc = CT::GetMinAlloc<TestType>();
+   constexpr size_t default_size = MinAllocOf<TestType>();
+   constexpr size_t min_alloc = MinAllocOf<TestType>();
    constexpr size_t testAlignment = alignof(TestType);
 
    REQUIRE(meta);
@@ -297,7 +297,7 @@ TEST_CASE_TEMPLATE("Testing allocator functions", TestType,
    const auto meta = MetaDataOf<TestType>();
    IF_SAFE(REQUIRE_THROWS(Allocator::Allocate(meta, 511_pot)));
    constexpr size_t testAlignment = alignof(TestType);
-   constexpr size_t min_alloc = CT::GetMinAlloc<TestType>();
+   constexpr size_t min_alloc = MinAllocOf<TestType>();
 
    GIVEN("A small allocation") {
       pot_t s = pot_t(Roof2(sizeof(TestType)));
