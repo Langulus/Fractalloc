@@ -17,21 +17,16 @@ endif()
 add_langulus_library(LangulusFractalloc
    SOURCES  $<TARGET_OBJECTS:LangulusLogger>
             $<TARGET_OBJECTS:LangulusRTTI>
-            $<TARGET_OBJECTS:LangulusPercist>
-            $<$<BOOL:${LANGULUS_OPTION_MANAGED_MEMORY}>:source/Allocator.cpp>
-            $<$<BOOL:${LANGULUS_OPTION_MANAGED_MEMORY}>:source/Pool.cpp>
+            $<$<BOOL:${LANGULUS_OPTION_MANAGED_MEMORY}>:source/Allocator.cpp source/Pool.cpp>
             $<$<BOOL:${LANGULUS_OPTION_MEMORY_STATISTICS}>:source/Statistics.cpp>
 )
 
 target_include_directories(LangulusFractalloc
-   PUBLIC   $<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>
-            $<TARGET_PROPERTY:LangulusRTTI,INTERFACE_INCLUDE_DIRECTORIES>
-            $<TARGET_PROPERTY:LangulusPercist,INTERFACE_INCLUDE_DIRECTORIES>
-            include
+   PUBLIC   include
 )
 
 target_link_libraries(LangulusFractalloc
-   PUBLIC   $<TARGET_PROPERTY:LangulusLogger,INTERFACE_LINK_LIBRARIES>
+   PUBLIC   LangulusRTTI
 )
 
 target_compile_definitions(LangulusFractalloc
