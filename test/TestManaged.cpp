@@ -31,7 +31,7 @@ SCENARIO("Testing FastLog2 calls") {
    }
 }
 
-TEST_CASE_TEMPLATE("Testing pool functions", TestType,
+TEST_CASE_TEMPLATE("Testing pool functions with ", TestType,
    TypeVeryBigAligned,
    TypeVeryBigPacked,
    Type1,
@@ -46,7 +46,7 @@ TEST_CASE_TEMPLATE("Testing pool functions", TestType,
    
    using Fractalloc::Pool;
    const auto meta = MetaDataOf<TestType>();
-   constexpr size_t default_size = MinAllocOf<TestType>();
+   constexpr size_t default_size = MinPoolOf<TestType>();
    constexpr size_t min_alloc = MinAllocOf<TestType>();
    constexpr size_t testAlignment = alignof(TestType);
 
